@@ -6,6 +6,7 @@ import { Search, ArrowRight, Loader2, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import { SpotWithPhoto } from '@/types/database'
 
 // Dynamic import for MainMap
 const MainMap = dynamic(() => import('./MainMap'), { 
@@ -13,22 +14,10 @@ const MainMap = dynamic(() => import('./MainMap'), {
   loading: () => <div className="w-full h-full bg-white/5 animate-pulse flex items-center justify-center text-muted text-xs">Loading Map Engine...</div>
 })
 
-interface Spot {
-  id: string
-  name: string
-  description: string
-  latitude: number
-  longitude: number
-  genre: string[]
-  best_time: string
-  difficulty: string
-  hero_photo_url: string
-}
-
 export default function Map() {
-  const [spots, setSpots] = useState<Spot[]>([])
+  const [spots, setSpots] = useState<SpotWithPhoto[]>([])
   const [loading, setLoading] = useState(false)
-  const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null)
+  const [selectedSpot, setSelectedSpot] = useState<SpotWithPhoto | null>(null)
   const [bounds, setBounds] = useState<any>(null)
 
   const fetchSpots = useCallback(async (currentBounds: any) => {

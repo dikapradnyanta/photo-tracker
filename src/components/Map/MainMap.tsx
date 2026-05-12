@@ -5,21 +5,11 @@ import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import { SpotWithPhoto } from '@/types/database'
 
 // Dynamic import for clustering
 const MarkerClusterGroup = dynamic(() => import('react-leaflet-cluster'), { ssr: false })
 
-interface Spot {
-  id: string
-  name: string
-  description: string
-  latitude: number
-  longitude: number
-  genre: string[]
-  best_time: string
-  difficulty: string
-  hero_photo_url: string
-}
 
 function MapUpdater({ onBoundsChange }: { onBoundsChange: (bounds: any) => void }) {
   const map = useMapEvents({
@@ -52,9 +42,9 @@ const createCustomIcon = (url: string) => {
 }
 
 interface MainMapProps {
-  spots: Spot[]
+  spots: SpotWithPhoto[]
   onBoundsChange: (bounds: any) => void
-  onSpotClick: (spot: Spot) => void
+  onSpotClick: (spot: SpotWithPhoto) => void
 }
 
 export default function MainMap({ spots, onBoundsChange, onSpotClick }: MainMapProps) {

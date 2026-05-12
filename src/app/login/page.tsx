@@ -47,7 +47,19 @@ export default function LoginPage() {
           password,
         })
         if (error) throw error
-        router.push('/profile')
+        
+        // Check if user has completed onboarding
+        const { data: profile } = await supabase
+          .from('users')
+          .select('onboarding_completed')
+          .eq('id', (await supabase.auth.getUser()).data.user?.id)
+          .single()
+
+        if (profile?.onboarding_completed) {
+          router.push('/profile')
+        } else {
+          router.push('/onboarding')
+        }
       }
     } catch (err: any) {
       setError(err.message)
@@ -57,9 +69,9 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-paper flex items-center justify-center p-6 relative overflow-hidden">
+    <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-6 relative overflow-hidden transition-colors">
       {/* Decorative background elements */}
-      <div className="absolute top-0 right-0 w-1/2 h-full bg-sand/20 -skew-x-12 translate-x-1/4 -z-10" />
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-amber-primary/[0.04] -skew-x-12 translate-x-1/4 -z-10" />
       <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-amber-primary/5 rounded-full blur-3xl -z-10" />
       
       <div className="max-w-md w-full relative z-10">
@@ -109,7 +121,7 @@ export default function LoginPage() {
                     type="email" 
                     required
                     placeholder="name@example.com"
-                    className="w-full pl-14 pr-5 py-5 bg-white/50 border border-border/60 rounded-3xl focus:outline-none focus:border-amber-primary focus:bg-white focus:ring-4 focus:ring-amber-primary/5 transition-all"
+                    className="input-base pl-14 pr-5 py-5 rounded-3xl focus:ring-4 focus:ring-amber-primary/5"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -129,7 +141,7 @@ export default function LoginPage() {
                     type="password" 
                     required
                     placeholder="••••••••"
-                    className="w-full pl-14 pr-5 py-5 bg-white/50 border border-border/60 rounded-3xl focus:outline-none focus:border-amber-primary focus:bg-white focus:ring-4 focus:ring-amber-primary/5 transition-all"
+                    className="input-base pl-14 pr-5 py-5 rounded-3xl focus:ring-4 focus:ring-amber-primary/5"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -142,7 +154,7 @@ export default function LoginPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="flex items-start gap-2 p-4 bg-red-50 text-red-600 text-sm rounded-2xl border border-red-100"
+                    className="flex items-start gap-2 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-2xl border border-red-100 dark:border-red-800/30"
                   >
                     <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
                     <p className="font-medium">{error}</p>
@@ -154,7 +166,7 @@ export default function LoginPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="flex items-start gap-2 p-4 bg-emerald-50 text-emerald-600 text-sm rounded-2xl border border-emerald-100"
+                    className="flex items-start gap-2 p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-sm rounded-2xl border border-emerald-100 dark:border-emerald-800/30"
                   >
                     <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
                     <p className="font-medium">{success}</p>

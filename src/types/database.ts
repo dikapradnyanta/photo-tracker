@@ -18,6 +18,8 @@ export interface Database {
           location: string | null
           gear: string | null
           genres: string[] | null
+          full_name: string | null
+          onboarding_completed: boolean | null
           created_at: string
         }
         Insert: {
@@ -28,6 +30,8 @@ export interface Database {
           location?: string | null
           gear?: string | null
           genres?: string[] | null
+          full_name?: string | null
+          onboarding_completed?: boolean | null
           created_at?: string
         }
         Update: {
@@ -38,6 +42,8 @@ export interface Database {
           location?: string | null
           gear?: string | null
           genres?: string[] | null
+          full_name?: string | null
+          onboarding_completed?: boolean | null
           created_at?: string
         }
       }
@@ -46,6 +52,7 @@ export interface Database {
           id: string
           name: string
           description: string | null
+          tips_trik: string | null
           latitude: number
           longitude: number
           genre: string[] | null
@@ -58,6 +65,7 @@ export interface Database {
           id?: string
           name: string
           description?: string | null
+          tips_trik?: string | null
           latitude: number
           longitude: number
           genre?: string[] | null
@@ -70,6 +78,7 @@ export interface Database {
           id?: string
           name?: string
           description?: string | null
+          tips_trik?: string | null
           latitude?: number
           longitude?: number
           genre?: string[] | null
@@ -136,4 +145,23 @@ export interface Database {
       }
     }
   }
+}
+
+// ============================================================
+// SpotWithPhoto — result type dari RPC get_spots_in_bbox
+// (includes hero_photo_url dari JOIN ke spot_photos)
+// ============================================================
+export interface SpotWithPhoto {
+  id: string
+  name: string
+  description: string | null
+  tips_trik: string | null
+  latitude: number
+  longitude: number
+  genre: string[] | null
+  best_time: string | null
+  difficulty: string | null
+  hero_photo_url: string | null  // dari subquery RPC, bukan kolom langsung
+  added_by: string | null
+  created_at: string
 }
