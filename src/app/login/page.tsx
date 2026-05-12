@@ -55,7 +55,7 @@ export default function LoginPage() {
           .eq('id', (await supabase.auth.getUser()).data.user?.id)
           .single()
 
-        if (profile?.onboarding_completed) {
+        if (profile?.onboarding_completed === true) {
           router.push('/profile')
         } else {
           router.push('/onboarding')

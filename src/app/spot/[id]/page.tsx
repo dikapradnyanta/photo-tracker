@@ -8,7 +8,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
   ArrowLeft, MapPin, Clock, Zap, Star, Camera, Loader2,
-  ChevronLeft, ChevronRight, MessageSquare, Navigation
+  ChevronLeft, ChevronRight, MessageSquare, Navigation, Send, Link as LinkIcon
 } from 'lucide-react'
 import { Database } from '@/types/database'
 
@@ -48,9 +48,18 @@ export default function SpotDetailPage() {
   const [loading, setLoading] = useState(true)
   const [activePhoto, setActivePhoto] = useState(0)
   const [avgRating, setAvgRating] = useState(0)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  // Review form state
+  const [reviewRating, setReviewRating] = useState(0)
+  const [reviewHover, setReviewHover] = useState(0)
+  const [reviewComment, setReviewComment] = useState('')
+  const [submittingReview, setSubmittingReview] = useState(false)
 
   useEffect(() => {
     if (!id) return
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setCurrentUser(session?.user ?? null)
+    })
 
     async function fetchSpot() {
       try {
@@ -100,6 +109,37 @@ export default function SpotDetailPage() {
 
     fetchSpot()
   }, [id, router])
+
+  const handleSubmitReview = async () => {
+    if (!currentUser || !spot || reviewRating === 0) return
+    setSubmittingReview(true)
+    try {
+      const { data, error } = await supabase
+        .from('spot_reviews')
+        .insert({
+          spot_id: spot.id,
+          user_id: currentUser.id,
+          rating: reviewRating,
+          comment: reviewComment.trim() || null,
+          visited_at: new Date().toISOString().split('T')[0]
+        })
+        .select('*, users(username, avatar_url)')
+        .single()
+
+      if (error) throw error
+
+      setReviews(prev => [data as SpotReview, ...prev])
+      // Recalc avg
+      const newAvg = [...reviews, data as SpotReview].reduce((a, r) => a + (r.rating || 0), 0) / (reviews.length + 1)
+      setAvgRating(Math.round(newAvg * 10) / 10)
+      setReviewRating(0)
+      setReviewComment('')
+    } catch (err: any) {
+      alert(`Gagal submit review: ${err.message}`)
+    } finally {
+      setSubmittingReview(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -294,47 +334,105 @@ export default function SpotDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
         >
-          <div className="flex items-center gap-3 mb-6">
-            <MessageSquare className="w-4 h-4 text-amber-primary" />
-            <p className="text-[10px] font-mono uppercase tracking-widest text-muted">
-              Review ({reviews.length})
-            </p>
-          </div>
-
-          {reviews.length === 0 ? (
-            <div className="py-16 text-center bg-white/5 border border-white/10 rounded-[24px]">
-              <Star className="w-10 h-10 mx-auto mb-3 text-muted/20" />
-              <p className="text-muted text-sm italic">Belum ada review. Jadilah yang pertama!</p>
+            <div className="flex items-center gap-3 mb-6">
+              <MessageSquare className="w-4 h-4 text-amber-primary" />
+              <p className="text-[10px] font-mono uppercase tracking-widest text-muted">
+                Review ({reviews.length})
+              </p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {reviews.map(review => (
-                <div key={review.id} className="bg-black/[0.04] dark:bg-white/5 border border-black/[0.08] dark:border-white/10 rounded-2xl p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-amber-primary/20 flex items-center justify-center text-xs font-bold text-amber-primary">
-                        {review.users?.username?.[0]?.toUpperCase() || '?'}
-                      </div>
-                      <span className="text-sm font-bold">{review.users?.username || 'Anonim'}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-3 h-3 ${i < (review.rating || 0) ? 'fill-amber-primary text-amber-primary' : 'text-muted/30'}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  {review.comment && (
-                    <p className="text-sm text-foreground/70 leading-relaxed">{review.comment}</p>
+
+            {/* Submit Review Form */}
+            {currentUser ? (
+              <div className="bg-black/[0.04] dark:bg-white/5 border border-black/[0.08] dark:border-white/10 rounded-[24px] p-6 mb-6">
+                <p className="text-xs font-mono font-bold uppercase tracking-widest text-muted mb-4">Tulis Review</p>
+                {/* Star picker */}
+                <div className="flex gap-1.5 mb-4">
+                  {[1,2,3,4,5].map(n => (
+                    <button
+                      key={n}
+                      onClick={() => setReviewRating(n)}
+                      onMouseEnter={() => setReviewHover(n)}
+                      onMouseLeave={() => setReviewHover(0)}
+                      className="transition-transform hover:scale-110"
+                    >
+                      <Star
+                        className={`w-7 h-7 transition-colors ${
+                          n <= (reviewHover || reviewRating)
+                            ? 'fill-amber-primary text-amber-primary'
+                            : 'text-muted/30'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                  {reviewRating > 0 && (
+                    <span className="ml-2 text-sm text-muted self-center">
+                      {['', 'Jelek', 'Kurang', 'Cukup', 'Bagus', 'Luar Biasa'][reviewRating]}
+                    </span>
                   )}
                 </div>
-              ))}
-            </div>
-          )}
-        </motion.div>
-      </div>
+                <textarea
+                  className="input-base py-3 rounded-xl text-sm min-h-[80px] mb-4"
+                  placeholder="Ceritakan pengalamanmu di spot ini... (opsional)"
+                  value={reviewComment}
+                  onChange={e => setReviewComment(e.target.value)}
+                />
+                <button
+                  onClick={handleSubmitReview}
+                  disabled={reviewRating === 0 || submittingReview}
+                  className="flex items-center gap-2 px-6 py-3 bg-amber-primary text-white rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-amber-primary/20 transition-all disabled:opacity-40"
+                >
+                  {submittingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  Kirim Review
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="flex items-center gap-3 p-4 bg-black/[0.04] dark:bg-white/5 border border-black/[0.08] dark:border-white/10 rounded-2xl mb-6 hover:border-amber-primary transition-all group"
+              >
+                <Star className="w-5 h-5 text-muted group-hover:text-amber-primary transition-colors" />
+                <p className="text-sm text-muted group-hover:text-foreground transition-colors">
+                  <span className="font-bold text-amber-primary">Login</span> untuk menulis review
+                </p>
+              </Link>
+            )}
+
+            {reviews.length === 0 ? (
+              <div className="py-16 text-center bg-black/[0.04] dark:bg-white/5 border border-black/[0.08] dark:border-white/10 rounded-[24px]">
+                <Star className="w-10 h-10 mx-auto mb-3 text-muted/20" />
+                <p className="text-muted text-sm italic">Belum ada review. Jadilah yang pertama!</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {reviews.map(review => (
+                  <div key={review.id} className="bg-black/[0.04] dark:bg-white/5 border border-black/[0.08] dark:border-white/10 rounded-2xl p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <Link href={`/profile/${review.users?.username}`} className="w-8 h-8 rounded-xl bg-amber-primary/20 flex items-center justify-center text-xs font-bold text-amber-primary hover:bg-amber-primary hover:text-white transition-colors">
+                          {review.users?.username?.[0]?.toUpperCase() || '?'}
+                        </Link>
+                        <Link href={`/profile/${review.users?.username}`} className="text-sm font-bold hover:text-amber-primary transition-colors">
+                          {review.users?.username || 'Anonim'}
+                        </Link>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-3 h-3 ${i < (review.rating || 0) ? 'fill-amber-primary text-amber-primary' : 'text-muted/30'}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    {review.comment && (
+                      <p className="text-sm text-foreground/70 leading-relaxed">{review.comment}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </div>
     </main>
   )
 }

@@ -42,8 +42,8 @@ export default function Navbar() {
             Peta
           </Link>
           <Link 
-            href="/add-spot" 
-            className={`transition-colors hover:text-amber-primary ${pathname === '/add-spot' ? 'text-amber-primary' : 'text-muted'}`}
+            href="/spots" 
+            className={`transition-colors hover:text-amber-primary ${pathname === '/spots' ? 'text-amber-primary' : 'text-muted'}`}
           >
             Spot
           </Link>

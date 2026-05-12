@@ -1,9 +1,19 @@
 'use client'
 
-import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, useMapEvents, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
+import { useEffect } from 'react'
 
 function CrosshairMap({ onLocationChange }: { onLocationChange: (pos: [number, number]) => void }) {
+  const map = useMap()
+
+  // Fire immediately on mount so initial coords are captured
+  useEffect(() => {
+    const center = map.getCenter()
+    onLocationChange([center.lat, center.lng])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useMapEvents({
     moveend(e) {
       const center = e.target.getCenter()

@@ -137,20 +137,24 @@ export default function ProfilePage() {
       const { error: updateError } = await supabase
         .from('users')
         .update({
-          ...editData,
+          username: editData.username,
+          full_name: editData.full_name,
+          bio: editData.bio,
+          location: editData.location,
+          gear: editData.gear,
           avatar_url
         })
         .eq('id', profile.id)
 
       if (updateError) throw updateError
       
-      setProfile({ ...profile, ...editData, avatar_url })
+      setProfile({ ...profile, ...editData, avatar_url } as Profile)
       setIsEditing(false)
       setAvatarFile(null)
       setAvatarPreview(null)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating settings:', error)
-      alert('Gagal menyimpan pengaturan.')
+      alert(`Gagal menyimpan pengaturan: ${error.message || 'Error tidak diketahui'}`)
     } finally {
       setSaving(false)
     }
