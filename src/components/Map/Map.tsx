@@ -60,7 +60,7 @@ export default function Map() {
           <input 
             type="text"
             placeholder="Cari spot di daerah..."
-            className="w-full pl-16 pr-8 py-5 bg-background/80 backdrop-blur-md border border-white/10 rounded-2xl focus:outline-none focus:border-amber-primary transition-all text-sm font-medium shadow-2xl"
+            className="w-full pl-16 pr-8 py-5 bg-background/80 backdrop-blur-md border border-black/5 dark:border-white/10 rounded-2xl focus:outline-none focus:border-amber-primary transition-all text-sm font-medium shadow-2xl"
           />
         </div>
       </div>
@@ -91,7 +91,7 @@ export default function Map() {
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="absolute bottom-0 left-0 right-0 z-[2000] p-4 md:p-8"
           >
-            <div className="max-w-xl mx-auto glass p-6 rounded-[32px] shadow-2xl border border-white/10 relative overflow-hidden text-paper">
+            <div className="max-w-xl mx-auto glass p-6 rounded-[32px] shadow-2xl border border-black/5 dark:border-white/10 relative overflow-hidden text-foreground">
               <button 
                 onClick={() => setSelectedSpot(null)}
                 className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-all z-10"
@@ -100,7 +100,7 @@ export default function Map() {
               </button>
 
               <div className="flex flex-col md:flex-row gap-6">
-                <div className="w-full md:w-40 h-40 rounded-2xl overflow-hidden shrink-0 border border-white/10 bg-white/5">
+                <div className="w-full md:w-40 h-40 rounded-[24px] overflow-hidden shrink-0 border border-black/5 dark:border-white/10 bg-black/5 dark:bg-white/5">
                   {selectedSpot.hero_photo_url && (
                     <img src={selectedSpot.hero_photo_url} alt={selectedSpot.name} className="w-full h-full object-cover" />
                   )}
@@ -131,7 +131,7 @@ export default function Map() {
                     </div>
                     <Link 
                       href={`/spot/${selectedSpot.id}`}
-                      className="px-6 py-3 bg-obsidian text-paper rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-amber-primary transition-all group"
+                      className="px-6 py-3 bg-foreground text-background rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-amber-primary hover:text-white transition-all group"
                     >
                       Lihat Detail
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

@@ -7,11 +7,12 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import { motion, AnimatePresence } from 'framer-motion'
 
 // Dynamic import for MiniMap to avoid SSR issues
 const MiniMap = dynamic(() => import('@/components/Map/MiniMap'), {
   ssr: false,
-  loading: () => <div className="w-full h-full bg-white/5 animate-pulse flex items-center justify-center text-muted text-xs">Loading map...</div>
+  loading: () => <div className="w-full h-full bg-black/5 dark:bg-white/5 animate-pulse flex items-center justify-center text-muted text-xs">Memuat peta...</div>
 })
 
 const GENRES = [
@@ -139,21 +140,30 @@ export default function AddSpotPage() {
     <main className="min-h-screen bg-background text-foreground pb-20 transition-colors">
       <Navbar />
 
-      <div className="max-w-3xl mx-auto px-6 pt-12">
+      <div className="max-w-3xl mx-auto px-6 pt-24 md:pt-32">
         <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-amber-primary transition-colors mb-8 group">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Kembali
         </Link>
 
-        <div className="mb-12">
-          <h1 className="text-5xl font-display font-bold mb-4">Tambah Spot</h1>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-12"
+        >
+          <h1 className="text-5xl font-display font-bold mb-4 tracking-tight">Tambah Spot</h1>
           <p className="text-muted text-lg leading-relaxed">Pin dulu, detail belakangan.</p>
-        </div>
+        </motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-10">
 
           {/* ── 1. Map + Crosshair ─────────────────────── */}
-          <section className="space-y-4">
+          <motion.section 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="space-y-4"
+          >
             <div className="flex items-center gap-3 pb-2 border-b border-black/10 dark:border-white/10">
               <MapPin className="w-5 h-5 text-amber-primary" />
               <h2 className="text-xl font-display font-bold">1. Titik Lokasi</h2>
@@ -178,10 +188,15 @@ export default function AddSpotPage() {
               </div>
             </div>
             <p className="text-xs text-center italic" style={{color:'var(--muted)'}}>Geser peta — pin selalu tepat di tengah</p>
-          </section>
+          </motion.section>
 
           {/* ── 2. Nama Spot ───────────────────────────── */}
-          <section className="space-y-4">
+          <motion.section 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-4"
+          >
             <div className="flex items-center gap-3 pb-2 border-b border-black/10 dark:border-white/10">
               <Star className="w-5 h-5 text-amber-primary" />
               <h2 className="text-xl font-display font-bold">2. Nama &amp; Genre</h2>
@@ -219,10 +234,15 @@ export default function AddSpotPage() {
                 ))}
               </div>
             </div>
-          </section>
+          </motion.section>
 
           {/* ── 3. Foto Utama ──────────────────────────── */}
-          <section className="space-y-4">
+          <motion.section 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-4"
+          >
             <div className="flex items-center gap-3 pb-2 border-b border-black/10 dark:border-white/10">
               <Camera className="w-5 h-5 text-amber-primary" />
               <h2 className="text-xl font-display font-bold">3. Foto Utama <span className="text-amber-primary">*</span></h2>
@@ -249,10 +269,15 @@ export default function AddSpotPage() {
                 onChange={handlePhotoChange}
               />
             </div>
-          </section>
+          </motion.section>
 
           {/* ── Detail Tambahan accordion (optional) ───── */}
-          <div className="border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="border border-black/10 dark:border-white/10 rounded-[24px] overflow-hidden bg-black/[0.02] dark:bg-white/[0.02]"
+          >
             <button
               type="button"
               onClick={() => setShowDetail(!showDetail)}
@@ -265,97 +290,110 @@ export default function AddSpotPage() {
               {showDetail ? <ChevronUp className="w-4 h-4 text-muted" /> : <ChevronDown className="w-4 h-4 text-muted" />}
             </button>
 
-            {showDetail && (
-              <div className="p-6 space-y-6 border-t border-black/10 dark:border-white/10">
-                {/* Manual coordinates */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono text-muted uppercase">Latitude</label>
-                    <input
-                      type="number"
-                      step="any"
-                      className="input-base rounded-lg"
-                      value={formData.latitude}
-                      onChange={(e) => setFormData({ ...formData, latitude: parseFloat(e.target.value) })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono text-muted uppercase">Longitude</label>
-                    <input
-                      type="number"
-                      step="any"
-                      className="input-base rounded-lg"
-                      value={formData.longitude}
-                      onChange={(e) => setFormData({ ...formData, longitude: parseFloat(e.target.value) })}
-                    />
-                  </div>
-                </div>
+            <AnimatePresence>
+              {showDetail && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="p-6 space-y-6 border-t border-black/10 dark:border-white/10">
+                    {/* Manual coordinates */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-mono text-muted uppercase">Latitude</label>
+                        <input
+                          type="number"
+                          step="any"
+                          className="input-base rounded-xl"
+                          value={formData.latitude}
+                          onChange={(e) => setFormData({ ...formData, latitude: parseFloat(e.target.value) })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-mono text-muted uppercase">Longitude</label>
+                        <input
+                          type="number"
+                          step="any"
+                          className="input-base rounded-xl"
+                          value={formData.longitude}
+                          onChange={(e) => setFormData({ ...formData, longitude: parseFloat(e.target.value) })}
+                        />
+                      </div>
+                    </div>
 
-                {/* best_time + difficulty */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-mono uppercase tracking-widest text-muted">Waktu Terbaik</label>
-                    <select
-                      className="input-base rounded-xl"
-                      value={detailData.best_time}
-                      onChange={(e) => setDetailData({ ...detailData, best_time: e.target.value })}
-                    >
-                      <option value="golden_hour">Golden Hour</option>
-                      <option value="blue_hour">Blue Hour</option>
-                      <option value="midday">Siang</option>
-                      <option value="night">Malam</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-mono uppercase tracking-widest text-muted">Tingkat Akses</label>
-                    <select
-                      className="input-base rounded-xl"
-                      value={detailData.difficulty}
-                      onChange={(e) => setDetailData({ ...detailData, difficulty: e.target.value })}
-                    >
-                      <option value="easy">Mudah</option>
-                      <option value="medium">Sedang</option>
-                      <option value="hard">Sulit</option>
-                    </select>
-                  </div>
-                </div>
+                    {/* best_time + difficulty */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-xs font-mono uppercase tracking-widest text-muted">Waktu Terbaik</label>
+                        <select
+                          className="input-base rounded-xl"
+                          value={detailData.best_time}
+                          onChange={(e) => setDetailData({ ...detailData, best_time: e.target.value })}
+                        >
+                          <option value="golden_hour">Golden Hour</option>
+                          <option value="blue_hour">Blue Hour</option>
+                          <option value="midday">Siang</option>
+                          <option value="night">Malam</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-mono uppercase tracking-widest text-muted">Tingkat Akses</label>
+                        <select
+                          className="input-base rounded-xl"
+                          value={detailData.difficulty}
+                          onChange={(e) => setDetailData({ ...detailData, difficulty: e.target.value })}
+                        >
+                          <option value="easy">Mudah</option>
+                          <option value="medium">Sedang</option>
+                          <option value="hard">Sulit</option>
+                        </select>
+                      </div>
+                    </div>
 
-                {/* tips_trik */}
-                <div className="space-y-2">
-                  <label className="text-xs font-mono uppercase tracking-widest text-muted">Tips &amp; Trik</label>
-                  <textarea
-                    placeholder="Hints cahaya, parkir, akses rahasia, dll..."
-                    rows={3}
-                    className="input-base rounded-xl"
-                    value={detailData.tips_trik}
-                    onChange={(e) => setDetailData({ ...detailData, tips_trik: e.target.value })}
-                  />
-                </div>
+                    {/* tips_trik */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-mono uppercase tracking-widest text-muted">Tips &amp; Trik</label>
+                      <textarea
+                        placeholder="Hints cahaya, parkir, akses rahasia, dll..."
+                        rows={3}
+                        className="input-base rounded-xl resize-none"
+                        value={detailData.tips_trik}
+                        onChange={(e) => setDetailData({ ...detailData, tips_trik: e.target.value })}
+                      />
+                    </div>
 
-                {/* description */}
-                <div className="space-y-2">
-                  <label className="text-xs font-mono uppercase tracking-widest text-muted">Deskripsi</label>
-                  <textarea
-                    placeholder="Ceritakan detail spot ini..."
-                    rows={3}
-                    className="input-base rounded-xl"
-                    value={detailData.description}
-                    onChange={(e) => setDetailData({ ...detailData, description: e.target.value })}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+                    {/* description */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-mono uppercase tracking-widest text-muted">Deskripsi</label>
+                      <textarea
+                        placeholder="Ceritakan detail spot ini..."
+                        rows={3}
+                        className="input-base rounded-xl resize-none"
+                        value={detailData.description}
+                        onChange={(e) => setDetailData({ ...detailData, description: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
 
           {/* ── Submit ─────────────────────────────────── */}
-          <button
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
             type="submit"
             disabled={loading}
-            className="w-full py-6 bg-amber-primary text-paper rounded-[24px] font-display font-bold text-xl hover:shadow-2xl hover:shadow-amber-primary/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+            className="w-full py-6 bg-amber-primary text-white rounded-[24px] font-display font-bold text-xl hover:shadow-2xl hover:shadow-amber-primary/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
           >
             {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Publikasikan Spot'}
             {!loading && <Send className="w-6 h-6" />}
-          </button>
+          </motion.button>
 
         </form>
       </div>

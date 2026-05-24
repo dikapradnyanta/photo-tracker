@@ -2,35 +2,37 @@
 
 /* ── Raw tokens — override per mode ─────────────────── */
 :root {
-  --bg:             #F6F5F3;
-  --fg:             #111111;
+  --bg:             #F7F6F3;
+  --fg:             #0D0D0D;
   --fg-secondary:   #3a3835;
-  --muted:          #6b6860;
+  --muted:          #78756E;
   --surface:        #ffffff;
-  --surface-alt:    #f2f1ef;
-  --border:         rgba(0,0,0,0.09);
+  --surface-alt:    #F0EEEB;
+  --border:         rgba(0,0,0,0.08);
   --input-bg:       #ffffff;
-  --input-border:   rgba(0,0,0,0.12);
+  --input-border:   rgba(0,0,0,0.10);
+  --glow:           rgba(232, 105, 42, 0.12);
 }
 
 .dark {
-  --bg:             #111111;
-  --fg:             #F6F5F3;
+  --bg:             #0A0A0A;
+  --fg:             #EDECE8;
   --fg-secondary:   #c8c6c2;
-  --muted:          #9b9890;
-  --surface:        #1c1c1c;
-  --surface-alt:    #252525;
-  --border:         rgba(255,255,255,0.08);
-  --input-bg:       #1a1a1a;
-  --input-border:   rgba(255,255,255,0.10);
+  --muted:          #7A7770;
+  --surface:        #141414;
+  --surface-alt:    #1C1C1C;
+  --border:         rgba(255,255,255,0.06);
+  --input-bg:       #141414;
+  --input-border:   rgba(255,255,255,0.08);
+  --glow:           rgba(232, 105, 42, 0.08);
 }
 
 /* ── Tailwind theme — reference the raw tokens ───────── */
 @theme {
-  --color-obsidian:      #111111;
+  --color-obsidian:      #0D0D0D;
   --color-amber-primary: #E8692A;
-  --color-paper:         #F6F5F3;
-  --color-forest:        #5C8C6E;
+  --color-paper:         #F7F6F3;
+  --color-forest:        #4A7C5C;
   --color-sand:          #D4C5A9;
 
   /* Dynamic — resolved at runtime via CSS vars */
@@ -40,28 +42,41 @@
   --color-surface:       var(--surface);
   --color-surface-alt:   var(--surface-alt);
 
-  --radius-card: 12px;
-  --radius-btn:  8px;
+  --radius-card: 16px;
+  --radius-btn:  12px;
 
-  --font-syne:    var(--font-syne);
-  --font-inter:   var(--font-inter);
-  --font-sans:    var(--font-inter);
-  --font-display: var(--font-syne);
+  --font-syne:      var(--font-syne);
+  --font-dm-sans:   var(--font-dm-sans);
+  --font-sans:      var(--font-dm-sans);
+  --font-display:   var(--font-syne);
 }
 
 /* ── Base ─────────────────────────────────────────────── */
 body {
   background-color: var(--bg);
   color: var(--fg);
-  font-family: var(--font-inter), sans-serif;
+  font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.2s, color 0.2s;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display), sans-serif;
+  font-family: var(--font-display), 'Syne', sans-serif;
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
+
+::selection {
+  background: #E8692A;
+  color: white;
+}
+
+/* ── Scrollbar ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #E8692A; }
 
 /* ── Utility classes ──────────────────────────────────── */
 
@@ -69,7 +84,7 @@ h1, h2, h3, h4, h5, h6 {
 .panel {
   background-color: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 20px;
 }
 
 /* Themed inputs */
@@ -77,37 +92,73 @@ h1, h2, h3, h4, h5, h6 {
   background-color: var(--input-bg);
   border: 1px solid var(--input-border);
   color: var(--fg);
-  border-radius: 12px;
-  padding: 14px 16px;
+  border-radius: 14px;
+  padding: 14px 18px;
   outline: none;
   width: 100%;
-  transition: border-color 0.2s;
+  font-size: 0.9375rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.input-base:focus  { border-color: #E8692A; }
-.input-base::placeholder { color: var(--muted); }
+.input-base:focus {
+  border-color: #E8692A;
+  box-shadow: 0 0 0 3px rgba(232, 105, 42, 0.1);
+}
+.input-base::placeholder { color: var(--muted); opacity: 0.7; }
 
 /* Select needs explicit bg */
 select.input-base { appearance: none; }
 
-/* Subtle button */
+/* Primary button */
 .btn-primary {
   background-color: var(--fg);
   color: var(--bg);
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 500;
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-weight: 600;
   border: 1px solid transparent;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px -8px rgba(0,0,0,0.3);
 }
 
 /* Glassmorphism */
 .glass {
   background: rgba(255,255,255,0.72);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(0,0,0,0.07);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border: 1px solid rgba(255,255,255,0.3);
 }
 .dark .glass {
-  background: rgba(28,28,28,0.82);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(20,20,20,0.78);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Noise texture overlay */
+.noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: overlay;
+}
+.dark .noise::after {
+  opacity: 0.05;
+}
+
+/* Grid pattern */
+.grid-pattern {
+  background-image: 
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Glow effect */
+.glow-amber {
+  box-shadow: 0 0 60px -12px rgba(232, 105, 42, 0.25);
 }

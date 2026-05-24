@@ -37,6 +37,23 @@ export default function SpotsPage() {
   const [activeGenre, setActiveGenre] = useState('Semua')
   const [user, setUser] = useState<any>(null)
 
+  const fetchSpots = async () => {
+    try {
+      setLoading(true)
+      // Use the bbox RPC with world bounds to get all spots
+      const { data, error } = await supabase.rpc('get_spots_in_bbox', {
+        min_lat: -90, max_lat: 90,
+        min_long: -180, max_long: 180
+      })
+      if (error) throw error
+      setSpots((data as SpotWithPhoto[]) || [])
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
@@ -55,23 +72,6 @@ export default function SpotsPage() {
     }
     setFiltered(result)
   }, [spots, activeGenre, query])
-
-  const fetchSpots = async () => {
-    try {
-      setLoading(true)
-      // Use the bbox RPC with world bounds to get all spots
-      const { data, error } = await supabase.rpc('get_spots_in_bbox', {
-        min_lat: -90, max_lat: 90,
-        min_long: -180, max_long: 180
-      })
-      if (error) throw error
-      setSpots((data as SpotWithPhoto[]) || [])
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   return (
     <main className="min-h-screen bg-background text-foreground pb-24 transition-colors">

@@ -190,7 +190,18 @@ export default function ProfilePage() {
     )
   }
 
-  if (!profile) return null
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center text-center p-6">
+        <Loader2 className="w-12 h-12 text-amber-primary animate-spin mb-4" />
+        <h2 className="text-xl font-bold mb-2">Sesi Profil Tidak Ditemukan</h2>
+        <p className="text-muted mb-6 text-sm max-w-sm">Tampaknya ada masalah dengan sesi Anda (mungkin database baru saja direset). Silakan masuk kembali.</p>
+        <button onClick={handleLogout} className="px-6 py-3 bg-obsidian text-paper rounded-xl font-bold hover:bg-amber-primary transition-all">
+          Keluar & Login Ulang
+        </button>
+      </div>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-background text-foreground pb-20 transition-colors">

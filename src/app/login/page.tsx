@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Camera, Mail, Lock, Loader2, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Camera, Mail, Lock, Loader2, ArrowLeft, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function LoginPage() {
@@ -69,79 +69,110 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-6 relative overflow-hidden transition-colors">
-      {/* Decorative background elements */}
-      <div className="absolute top-0 right-0 w-1/2 h-full bg-amber-primary/[0.04] -skew-x-12 translate-x-1/4 -z-10" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-amber-primary/5 rounded-full blur-3xl -z-10" />
-      
-      <div className="max-w-md w-full relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-amber-primary transition-colors mb-10 group">
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Kembali ke Beranda
+    <main className="min-h-screen bg-background text-foreground flex relative overflow-hidden">
+      {/* Left Panel — Decorative */}
+      <div className="hidden lg:flex w-1/2 relative overflow-hidden noise">
+        <div className="absolute inset-0 grid-pattern opacity-30" />
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-primary/20 via-transparent to-forest/10" />
+        <img 
+          src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1200&q=80" 
+          alt="Photography" 
+          className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-40"
+        />
+        
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
+          <Link href="/" className="flex items-center gap-2 group">
+            <Camera className="w-6 h-6 text-amber-primary" />
+            <span className="text-xl font-display font-bold tracking-tight">
+              Photo<span className="text-amber-primary italic">Tracker</span>
+            </span>
           </Link>
-
-          <div className="glass p-8 md:p-12 rounded-[48px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white/40 backdrop-blur-2xl">
-            <div className="text-center mb-10">
-              <motion.div 
-                layoutId="logo"
-                className="inline-flex items-center justify-center w-20 h-20 rounded-[28px] bg-obsidian text-paper mb-6 shadow-xl shadow-obsidian/20"
-              >
-                <Camera className="w-10 h-10 text-amber-primary" />
-              </motion.div>
-              
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={isSignUp ? 'signup' : 'login'}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.05 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <h1 className="text-4xl font-display font-bold tracking-tight">
-                    {isSignUp ? 'Buat Akun' : 'Masuk'}
-                  </h1>
-                  <p className="text-muted mt-3 font-medium">
-                    {isSignUp ? 'Mulai petualangan visualmu.' : 'Siapkan kameramu, mari berburu.'}
-                  </p>
-                </motion.div>
-              </AnimatePresence>
+          
+          <div>
+            <blockquote className="text-4xl font-display font-bold leading-tight tracking-tight mb-6 max-w-md">
+              "Setiap spot punya ceritanya sendiri."
+            </blockquote>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-amber-primary/20 overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64" alt="" className="w-full h-full object-cover" />
+              </div>
+              <div>
+                <p className="text-sm font-bold">Alex Mercer</p>
+                <p className="text-xs text-muted">Landscape Photographer</p>
+              </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            <form onSubmit={handleAuth} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted/80 ml-1">Email Address</label>
+      {/* Right Panel — Form */}
+      <div className="flex-1 flex items-center justify-center p-6 md:p-12 relative">
+        {/* Mobile back */}
+        <Link href="/" className="absolute top-6 left-6 lg:hidden inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-amber-primary transition-colors group">
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          Kembali
+        </Link>
+
+        <div className="max-w-sm w-full">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {/* Desktop back */}
+            <Link href="/" className="hidden lg:inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-amber-primary transition-colors mb-12 group">
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              Kembali ke Beranda
+            </Link>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={isSignUp ? 'signup' : 'login'}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className="mb-10"
+              >
+                <h1 className="text-4xl font-display font-bold tracking-tight mb-2">
+                  {isSignUp ? 'Buat Akun' : 'Masuk'}
+                </h1>
+                <p className="text-muted text-sm">
+                  {isSignUp ? 'Mulai petualangan visual-mu.' : 'Siapkan kameramu, mari berburu.'}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+
+            <form onSubmit={handleAuth} className="space-y-5">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted ml-1">Email</label>
                 <div className="relative group">
-                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-amber-primary" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted transition-colors group-focus-within:text-amber-primary" />
                   <input 
                     type="email" 
                     required
                     placeholder="name@example.com"
-                    className="input-base pl-14 pr-5 py-5 rounded-3xl focus:ring-4 focus:ring-amber-primary/5"
+                    className="input-base pl-12 pr-4 py-4 rounded-2xl"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex justify-between items-end px-1">
-                  <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted/80">Password</label>
+                  <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted">Password</label>
                   {!isSignUp && (
                     <button type="button" className="text-[10px] font-bold text-amber-primary uppercase tracking-wider hover:underline">Lupa?</button>
                   )}
                 </div>
                 <div className="relative group">
-                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-amber-primary" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted transition-colors group-focus-within:text-amber-primary" />
                   <input 
                     type="password" 
                     required
                     placeholder="••••••••"
-                    className="input-base pl-14 pr-5 py-5 rounded-3xl focus:ring-4 focus:ring-amber-primary/5"
+                    className="input-base pl-12 pr-4 py-4 rounded-2xl"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -154,10 +185,10 @@ export default function LoginPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="flex items-start gap-2 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-2xl border border-red-100 dark:border-red-800/30"
+                    className="flex items-start gap-2 p-3.5 bg-red-50 dark:bg-red-900/15 text-red-600 dark:text-red-400 text-sm rounded-xl border border-red-100 dark:border-red-800/20"
                   >
                     <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                    <p className="font-medium">{error}</p>
+                    <p className="font-medium text-xs">{error}</p>
                   </motion.div>
                 )}
                 
@@ -166,10 +197,10 @@ export default function LoginPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="flex items-start gap-2 p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-sm rounded-2xl border border-emerald-100 dark:border-emerald-800/30"
+                    className="flex items-start gap-2 p-3.5 bg-emerald-50 dark:bg-emerald-900/15 text-emerald-600 dark:text-emerald-400 text-sm rounded-xl border border-emerald-100 dark:border-emerald-800/20"
                   >
                     <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
-                    <p className="font-medium">{success}</p>
+                    <p className="font-medium text-xs">{success}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -177,37 +208,32 @@ export default function LoginPage() {
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full py-5 bg-obsidian text-paper rounded-3xl font-display font-bold text-lg hover:bg-amber-primary hover:shadow-2xl hover:shadow-amber-primary/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 relative overflow-hidden group"
+                className="w-full py-4 bg-obsidian text-paper dark:bg-white dark:text-black rounded-2xl font-bold flex items-center justify-center gap-3 disabled:opacity-50 hover:bg-amber-primary dark:hover:bg-amber-primary dark:hover:text-white hover:shadow-xl hover:shadow-amber-primary/20 hover:-translate-y-0.5 transition-all group"
               >
                 {loading ? (
-                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <>
                     <span>{isSignUp ? 'Daftar Sekarang' : 'Masuk ke Aplikasi'}</span>
-                    <motion.div
-                      animate={{ x: [0, 5, 0] }}
-                      transition={{ repeat: Infinity, duration: 1.5 }}
-                    >
-                      <ArrowLeft className="w-5 h-5 rotate-180" />
-                    </motion.div>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
               </button>
             </form>
 
-            <div className="mt-10 text-center">
+            <div className="mt-8 text-center">
               <button 
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="group inline-flex items-center gap-2 text-sm font-bold text-muted transition-colors"
+                className="group inline-flex items-center gap-2 text-sm text-muted"
               >
                 {isSignUp ? 'Sudah punya akun?' : 'Belum punya akun?'}
-                <span className="text-amber-primary group-hover:underline">
+                <span className="font-bold text-amber-primary group-hover:underline">
                   {isSignUp ? 'Masuk' : 'Daftar Gratis'}
                 </span>
               </button>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </main>
   )
