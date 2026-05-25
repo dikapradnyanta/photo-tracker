@@ -139,7 +139,7 @@ export default function OnboardingPage() {
             <div 
               key={s} 
               className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
-                s <= step ? 'bg-amber-primary' : 'bg-black/10 dark:bg-white/10'
+                s <= step ? 'bg-amber-primary' : 'bg-surface-alt'
               }`} 
             />
           ))}
@@ -200,7 +200,7 @@ export default function OnboardingPage() {
                     className="relative w-40 h-40 mx-auto group cursor-pointer"
                     onClick={() => document.getElementById('avatar-input')?.click()}
                   >
-                    <div className="w-full h-full rounded-[48px] bg-black/[0.03] dark:bg-white/5 border-2 border-dashed border-black/10 dark:border-white/10 overflow-hidden flex items-center justify-center transition-all group-hover:border-amber-primary/50">
+                    <div className="w-full h-full rounded-[48px] bg-surface-alt border-2 border-dashed border-border overflow-hidden flex items-center justify-center transition-all group-hover:border-amber-primary/50">
                       {avatarPreview ? (
                         <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
                       ) : (
@@ -239,7 +239,7 @@ export default function OnboardingPage() {
                     <div className="space-y-2 pt-4">
                       <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted">Foto Pertama (Karya Terbaikmu)</label>
                       <div 
-                        className="relative h-40 rounded-3xl bg-black/[0.03] dark:bg-white/5 border-2 border-dashed border-black/10 dark:border-white/10 flex items-center justify-center cursor-pointer group hover:border-amber-primary/50 transition-all"
+                        className="relative h-40 rounded-3xl bg-surface-alt border-2 border-dashed border-border flex items-center justify-center cursor-pointer group hover:border-amber-primary/50 transition-all"
                         onClick={() => document.getElementById('first-photo-input')?.click()}
                       >
                         {firstPhotoPreview ? (
@@ -261,7 +261,7 @@ export default function OnboardingPage() {
                 {step > 1 && (
                   <button 
                     onClick={handleBack}
-                    className="flex-1 py-4 border border-black/10 dark:border-white/10 rounded-2xl font-bold text-sm hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                    className="flex-1 py-4 border border-border rounded-2xl font-bold text-sm hover:bg-black/5 dark:hover:bg-white/5 transition-all"
                   >
                     Kembali
                   </button>

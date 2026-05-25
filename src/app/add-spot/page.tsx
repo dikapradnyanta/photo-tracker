@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 // Dynamic import for MiniMap to avoid SSR issues
 const MiniMap = dynamic(() => import('@/components/Map/MiniMap'), {
   ssr: false,
-  loading: () => <div className="w-full h-full bg-black/5 dark:bg-white/5 animate-pulse flex items-center justify-center text-muted text-xs">Memuat peta...</div>
+  loading: () => <div className="w-full h-full bg-surface-alt animate-pulse flex items-center justify-center text-muted text-xs">Memuat peta...</div>
 })
 
 const GENRES = [
@@ -164,12 +164,12 @@ export default function AddSpotPage() {
             transition={{ delay: 0.1 }}
             className="space-y-4"
           >
-            <div className="flex items-center gap-3 pb-2 border-b border-black/10 dark:border-white/10">
+            <div className="flex items-center gap-3 pb-2 border-b border-border">
               <MapPin className="w-5 h-5 text-amber-primary" />
               <h2 className="text-xl font-display font-bold">1. Titik Lokasi</h2>
             </div>
 
-            <div className="h-80 rounded-[24px] overflow-hidden border border-black/10 dark:border-white/10 relative">
+            <div className="h-80 rounded-[24px] overflow-hidden border border-border relative">
               <MiniMap
                 latitude={formData.latitude}
                 longitude={formData.longitude}
@@ -197,7 +197,7 @@ export default function AddSpotPage() {
             transition={{ delay: 0.2 }}
             className="space-y-4"
           >
-            <div className="flex items-center gap-3 pb-2 border-b border-black/10 dark:border-white/10">
+            <div className="flex items-center gap-3 pb-2 border-b border-border">
               <Star className="w-5 h-5 text-amber-primary" />
               <h2 className="text-xl font-display font-bold">2. Nama &amp; Genre</h2>
             </div>
@@ -226,7 +226,7 @@ export default function AddSpotPage() {
                     className={`px-4 py-2 rounded-full text-sm font-bold border transition-all ${
                       formData.genre === g.value
                         ? 'bg-amber-primary text-paper border-amber-primary'
-                        : 'bg-black/5 dark:bg-white/5 text-muted border-black/10 dark:border-white/10 hover:border-amber-primary/50'
+                        : 'bg-surface-alt text-muted border-border hover:border-amber-primary/50'
                     }`}
                   >
                     {g.label}
@@ -243,13 +243,13 @@ export default function AddSpotPage() {
             transition={{ delay: 0.3 }}
             className="space-y-4"
           >
-            <div className="flex items-center gap-3 pb-2 border-b border-black/10 dark:border-white/10">
+            <div className="flex items-center gap-3 pb-2 border-b border-border">
               <Camera className="w-5 h-5 text-amber-primary" />
               <h2 className="text-xl font-display font-bold">3. Foto Utama <span className="text-amber-primary">*</span></h2>
             </div>
 
             <div
-              className="relative h-64 rounded-[24px] bg-black/[0.03] dark:bg-white/5 border-2 border-dashed border-black/10 dark:border-white/10 overflow-hidden flex items-center justify-center group hover:border-amber-primary/50 transition-all cursor-pointer"
+              className="relative h-64 rounded-[24px] bg-surface-alt border-2 border-dashed border-border overflow-hidden flex items-center justify-center group hover:border-amber-primary/50 transition-all cursor-pointer"
               onClick={() => document.getElementById('photo-input')?.click()}
             >
               {photoPreview ? (
@@ -276,12 +276,12 @@ export default function AddSpotPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="border border-black/10 dark:border-white/10 rounded-[24px] overflow-hidden bg-black/[0.02] dark:bg-white/[0.02]"
+            className="border border-border rounded-[24px] overflow-hidden bg-surface-alt"
           >
             <button
               type="button"
               onClick={() => setShowDetail(!showDetail)}
-              className="w-full p-4 flex items-center justify-between bg-black/[0.03] dark:bg-white/5 hover:bg-black/[0.06] dark:hover:bg-white/10 transition-all"
+              className="w-full p-4 flex items-center justify-between bg-surface-alt hover:bg-black/[0.06] dark:hover:bg-white/10 transition-all"
             >
               <span className="flex items-center gap-3">
                 <span className="text-xs font-mono font-bold uppercase tracking-widest text-muted">Detail Tambahan</span>
@@ -299,7 +299,7 @@ export default function AddSpotPage() {
                   transition={{ duration: 0.3 }}
                   className="overflow-hidden"
                 >
-                  <div className="p-6 space-y-6 border-t border-black/10 dark:border-white/10">
+                  <div className="p-6 space-y-6 border-t border-border">
                     {/* Manual coordinates */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">

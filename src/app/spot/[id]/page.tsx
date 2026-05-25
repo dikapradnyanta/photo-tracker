@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, Variants } from 'framer-motion'
 import {
   ArrowLeft, MapPin, Clock, Zap, Star, Camera, Loader2,
   ChevronLeft, ChevronRight, MessageSquare, Navigation, Send
@@ -37,11 +37,11 @@ const DIFFICULTY_LABEL: Record<string, string> = {
   hard: 'Sulit',
 }
 
-const stagger = {
+const stagger: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.1 } }
 }
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
 }
@@ -195,7 +195,7 @@ export default function SpotDetailPage() {
         {/* Floating Back Button */}
         <Link
           href="/map"
-          className="absolute top-8 left-6 md:left-12 z-20 flex items-center gap-2 px-5 py-2.5 bg-white/10 dark:bg-black/20 backdrop-blur-xl border border-white/20 rounded-full text-sm font-bold text-white hover:bg-white/20 transition-all group shadow-2xl"
+          className="absolute top-8 left-6 md:left-12 z-20 flex items-center gap-2 px-5 py-2.5 bg-surface-alt/80 backdrop-blur-xl border border-border rounded-full text-sm font-bold text-foreground hover:bg-surface transition-all group shadow-2xl"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Kembali ke Peta
@@ -227,7 +227,7 @@ export default function SpotDetailPage() {
               </motion.h1>
 
               <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-xl">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-border text-white shadow-xl">
                   <Star className="w-4 h-4 fill-amber-primary text-amber-primary drop-shadow-[0_0_8px_rgba(232,105,42,0.8)]" />
                   <span className="font-bold text-sm">{avgRating > 0 ? avgRating : 'Baru'}</span>
                   <span className="text-xs text-white/70">({reviews.length} review)</span>
@@ -247,21 +247,21 @@ export default function SpotDetailPage() {
 
             {/* Photo Navigation (if multiple) */}
             {photos.length > 1 && (
-              <motion.div variants={fadeUp} className="flex items-center gap-3 bg-black/40 backdrop-blur-xl border border-white/10 p-2 rounded-2xl shadow-2xl">
+              <motion.div variants={fadeUp} className="flex items-center gap-3 bg-surface/80 backdrop-blur-xl border border-border p-2 rounded-2xl shadow-2xl">
                 <button
                   onClick={() => setActivePhoto(p => Math.max(0, p - 1))}
-                  className="p-3 bg-white/10 rounded-xl hover:bg-white/20 text-white transition-all disabled:opacity-30 disabled:hover:bg-white/10"
+                  className="p-3 bg-surface-alt rounded-xl hover:bg-muted/20 text-foreground transition-all disabled:opacity-30"
                   disabled={activePhoto === 0}
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <div className="px-4 text-center">
-                  <span className="block text-sm font-bold text-white">{activePhoto + 1}</span>
-                  <span className="block text-[10px] font-mono text-white/50 uppercase">of {photos.length}</span>
+                  <span className="block text-sm font-bold text-foreground">{activePhoto + 1}</span>
+                  <span className="block text-[10px] font-mono text-muted uppercase">of {photos.length}</span>
                 </div>
                 <button
                   onClick={() => setActivePhoto(p => Math.min(photos.length - 1, p + 1))}
-                  className="p-3 bg-white/10 rounded-xl hover:bg-white/20 text-white transition-all disabled:opacity-30 disabled:hover:bg-white/10"
+                  className="p-3 bg-surface-alt rounded-xl hover:bg-muted/20 text-foreground transition-all disabled:opacity-30"
                   disabled={activePhoto === photos.length - 1}
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -304,7 +304,7 @@ export default function SpotDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="prose prose-lg dark:prose-invert max-w-none"
+            className="prose prose-lg max-w-none prose-p:text-foreground/80 prose-headings:text-foreground prose-strong:text-foreground"
           >
             <p className="text-xl leading-relaxed text-foreground/80 font-medium">
               {spot.description || "Belum ada deskripsi untuk spot ini."}
@@ -350,7 +350,7 @@ export default function SpotDetailPage() {
                       setActivePhoto(i)
                       window.scrollTo({ top: 0, behavior: 'smooth' })
                     }}
-                    className="relative aspect-square rounded-[24px] overflow-hidden group border border-white/10"
+                    className="relative aspect-square rounded-[24px] overflow-hidden group border border-border"
                   >
                     <img src={photo.photo_url} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                     <div className={`absolute inset-0 transition-colors duration-300 ${i === activePhoto ? 'border-4 border-amber-primary bg-amber-primary/10' : 'bg-black/20 group-hover:bg-transparent'}`} />
@@ -406,7 +406,7 @@ export default function SpotDetailPage() {
                 <button
                   onClick={handleSubmitReview}
                   disabled={reviewRating === 0 || submittingReview}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-obsidian text-paper dark:bg-white dark:text-obsidian rounded-2xl font-bold hover:scale-[1.02] transition-all disabled:opacity-40"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-foreground text-background rounded-2xl font-bold hover:scale-[1.02] transition-all disabled:opacity-40"
                 >
                   {submittingReview ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                   Kirim Ulasan

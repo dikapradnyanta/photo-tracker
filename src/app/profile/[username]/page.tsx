@@ -114,7 +114,7 @@ export default function PublicProfilePage() {
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-10 items-center md:items-start relative z-10">
           {/* Avatar */}
           <div className="relative">
-            <div className="w-28 h-28 rounded-[36px] bg-black/[0.04] dark:bg-white/5 p-1 border border-black/10 dark:border-white/10 shadow-xl">
+            <div className="w-28 h-28 rounded-[36px] bg-surface-alt p-1 border border-border shadow-xl">
               <div className="w-full h-full rounded-[32px] bg-sand/20 flex items-center justify-center overflow-hidden">
                 {profile.avatar_url ? (
                   <img src={profile.avatar_url} alt={profile.username || ''} className="w-full h-full object-cover" />
@@ -153,7 +153,7 @@ export default function PublicProfilePage() {
 
             {profile.gear && (
               <div className="flex items-center justify-center md:justify-start gap-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-black/[0.03] dark:bg-white/5 rounded-xl border border-black/10 dark:border-white/10 text-xs font-medium">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-alt rounded-xl border border-border text-xs font-medium">
                   <HardDrive className="w-3.5 h-3.5 text-amber-primary" />
                   {profile.gear}
                 </div>
@@ -185,7 +185,7 @@ export default function PublicProfilePage() {
         </div>
 
         {photos.length === 0 ? (
-          <div className="py-32 text-center border-2 border-dashed border-black/10 dark:border-white/10 rounded-[40px]">
+          <div className="py-32 text-center border-2 border-dashed border-border rounded-[40px]">
             <Camera className="w-12 h-12 mx-auto mb-4 opacity-10" />
             <p className="text-muted italic text-sm">Belum ada foto yang diunggah.</p>
           </div>

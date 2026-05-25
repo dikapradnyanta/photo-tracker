@@ -18,6 +18,7 @@ export default function Map() {
   const [spots, setSpots] = useState<SpotWithPhoto[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedSpot, setSelectedSpot] = useState<SpotWithPhoto | null>(null)
+  const [selectedClusterSpots, setSelectedClusterSpots] = useState<SpotWithPhoto[]>([])
   const [bounds, setBounds] = useState<any>(null)
 
   const fetchSpots = useCallback(async (currentBounds: any) => {
@@ -54,13 +55,13 @@ export default function Map() {
   return (
     <div className="h-[calc(100vh-80px)] w-full flex flex-col relative overflow-hidden">
       {/* Search Bar */}
-      <div className="absolute top-6 left-6 right-6 z-[1000] md:left-12 md:right-auto md:w-96">
+      <div className="absolute top-24 left-6 right-6 z-[1000] md:left-12 md:right-auto md:w-96">
         <div className="relative group">
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-amber-primary" />
           <input 
             type="text"
             placeholder="Cari spot di daerah..."
-            className="w-full pl-16 pr-8 py-5 bg-background/80 backdrop-blur-md border border-black/5 dark:border-white/10 rounded-2xl focus:outline-none focus:border-amber-primary transition-all text-sm font-medium shadow-2xl"
+            className="w-full pl-16 pr-8 py-5 bg-background/80 backdrop-blur-md border border-border rounded-2xl focus:outline-none focus:border-amber-primary transition-all text-sm font-medium shadow-2xl"
           />
         </div>
       </div>
@@ -70,7 +71,14 @@ export default function Map() {
         <MainMap 
           spots={spots} 
           onBoundsChange={setBounds} 
-          onSpotClick={setSelectedSpot} 
+          onSpotClick={(spot) => {
+            setSelectedSpot(spot)
+            setSelectedClusterSpots([])
+          }} 
+          onClusterClick={(clusterSpots) => {
+            setSelectedClusterSpots(clusterSpots)
+            setSelectedSpot(null)
+          }}
         />
 
         {loading && (
@@ -91,7 +99,7 @@ export default function Map() {
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="absolute bottom-0 left-0 right-0 z-[2000] p-4 md:p-8"
           >
-            <div className="max-w-xl mx-auto glass p-6 rounded-[32px] shadow-2xl border border-black/5 dark:border-white/10 relative overflow-hidden text-foreground">
+            <div className="max-w-xl mx-auto glass p-6 rounded-[32px] shadow-2xl border border-border relative overflow-hidden text-foreground">
               <button 
                 onClick={() => setSelectedSpot(null)}
                 className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-all z-10"
@@ -100,7 +108,7 @@ export default function Map() {
               </button>
 
               <div className="flex flex-col md:flex-row gap-6">
-                <div className="w-full md:w-40 h-40 rounded-[24px] overflow-hidden shrink-0 border border-black/5 dark:border-white/10 bg-black/5 dark:bg-white/5">
+                <div className="w-full md:w-40 h-40 rounded-[24px] overflow-hidden shrink-0 border border-border bg-surface-alt">
                   {selectedSpot.hero_photo_url && (
                     <img src={selectedSpot.hero_photo_url} alt={selectedSpot.name} className="w-full h-full object-cover" />
                   )}
@@ -138,6 +146,59 @@ export default function Map() {
                     </Link>
                   </div>
                 </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Cluster Gallery Bottom Sheet */}
+      <AnimatePresence>
+        {selectedClusterSpots.length > 0 && (
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="absolute bottom-0 left-0 right-0 z-[2000] p-4 md:p-8 pointer-events-none"
+          >
+            <div className="max-w-4xl mx-auto glass p-6 rounded-[32px] shadow-2xl border border-border relative overflow-hidden text-foreground pointer-events-auto">
+              <div className="flex items-center justify-between mb-4 px-2">
+                <h3 className="font-display font-bold text-xl">
+                  {selectedClusterSpots.length} Spot Ditemukan
+                </h3>
+                <button 
+                  onClick={() => setSelectedClusterSpots([])}
+                  className="p-2 hover-surface rounded-full transition-all"
+                >
+                  <X className="w-5 h-5 text-muted" />
+                </button>
+              </div>
+
+              <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                {selectedClusterSpots.map((spot) => (
+                  <button
+                    key={spot.id}
+                    onClick={() => {
+                      setSelectedSpot(spot)
+                      setSelectedClusterSpots([])
+                    }}
+                    className="w-[260px] md:w-[280px] shrink-0 snap-center flex flex-col text-left group"
+                  >
+                    <div className="w-full h-40 rounded-[24px] overflow-hidden mb-3 border border-border relative bg-surface-alt">
+                      <img src={spot.hero_photo_url || 'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=400&q=80'} alt={spot.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <div className="absolute top-2 left-2 flex gap-1">
+                        {spot.genre?.slice(0, 2).map(g => (
+                          <span key={g} className="px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-[8px] font-mono font-bold rounded uppercase">
+                            {g}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <h4 className="font-bold text-base line-clamp-1 group-hover:text-amber-primary transition-colors">{spot.name}</h4>
+                    <p className="text-xs text-muted mt-1 uppercase font-bold tracking-wider">{spot.difficulty} • {spot.best_time?.replace('_', ' ')}</p>
+                  </button>
+                ))}
               </div>
             </div>
           </motion.div>

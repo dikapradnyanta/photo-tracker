@@ -185,7 +185,7 @@ export default function LoginPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="flex items-start gap-2 p-3.5 bg-red-50 dark:bg-red-900/15 text-red-600 dark:text-red-400 text-sm rounded-xl border border-red-100 dark:border-red-800/20"
+                    className="flex items-start gap-2 p-3.5 alert-error text-sm rounded-xl border"
                   >
                     <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
                     <p className="font-medium text-xs">{error}</p>
@@ -197,7 +197,7 @@ export default function LoginPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="flex items-start gap-2 p-3.5 bg-emerald-50 dark:bg-emerald-900/15 text-emerald-600 dark:text-emerald-400 text-sm rounded-xl border border-emerald-100 dark:border-emerald-800/20"
+                    className="flex items-start gap-2 p-3.5 alert-success text-sm rounded-xl border"
                   >
                     <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
                     <p className="font-medium text-xs">{success}</p>
@@ -208,7 +208,7 @@ export default function LoginPage() {
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full py-4 bg-obsidian text-paper dark:bg-white dark:text-black rounded-2xl font-bold flex items-center justify-center gap-3 disabled:opacity-50 hover:bg-amber-primary dark:hover:bg-amber-primary dark:hover:text-white hover:shadow-xl hover:shadow-amber-primary/20 hover:-translate-y-0.5 transition-all group"
+                className="w-full py-4 bg-foreground text-background rounded-2xl font-bold flex items-center justify-center gap-3 disabled:opacity-50 hover:bg-amber-primary hover:text-white hover:shadow-xl hover:shadow-amber-primary/20 hover:-translate-y-0.5 transition-all group"
               >
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />

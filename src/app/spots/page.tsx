@@ -111,7 +111,7 @@ export default function SpotsPage() {
               className={`px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
                 activeGenre === genre
                   ? 'bg-amber-primary border-amber-primary text-white shadow-lg shadow-amber-primary/20'
-                  : 'bg-black/[0.03] dark:bg-white/5 border-black/10 dark:border-white/10 text-muted hover:border-amber-primary/40'
+                  : 'bg-surface-alt border-border text-muted hover:border-amber-primary/40'
               }`}
             >
               {genre}
@@ -142,7 +142,7 @@ export default function SpotsPage() {
               >
                 <Link href={`/spot/${spot.id}`} className="group block rounded-[28px] overflow-hidden panel hover:border-amber-primary/40 transition-all hover:shadow-xl hover:shadow-amber-primary/5">
                   {/* Thumbnail */}
-                  <div className="aspect-[4/3] bg-black/[0.05] dark:bg-white/5 overflow-hidden relative">
+                  <div className="aspect-[4/3] bg-surface-alt overflow-hidden relative">
                     {spot.hero_photo_url ? (
                       <img
                         src={spot.hero_photo_url}
@@ -157,7 +157,7 @@ export default function SpotsPage() {
                     {/* Genre badges */}
                     <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
                       {spot.genre?.slice(0, 2).map(g => (
-                        <span key={g} className="px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-[9px] font-mono font-bold rounded-full uppercase">
+                        <span key={g} className="px-2 py-0.5 bg-background/80 backdrop-blur-sm text-white text-[9px] font-mono font-bold rounded-full uppercase">
                           {g}
                         </span>
                       ))}
