@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, Variants } from 'framer-motion'
 import {
   ArrowLeft, MapPin, Clock, Zap, Star, Camera, Loader2,
   Heart, MessageSquare, Navigation, Send, ChevronLeft, ChevronRight
@@ -29,10 +29,26 @@ const BEST_TIME_LABEL: Record<string, string> = {
   midday: 'Siang Hari',
   night: 'Malam Hari',
 }
+
 const DIFFICULTY_LABEL: Record<string, string> = {
   easy: 'Mudah',
   medium: 'Sedang',
   hard: 'Sulit',
+}
+
+const DIFFICULTY_STYLE: Record<string, { bg: string, text: string, border: string }> = {
+  easy: { bg: 'rgba(16, 185, 129, 0.08)', text: 'text-emerald-500', border: 'border-emerald-500/20' },
+  medium: { bg: 'rgba(245, 158, 11, 0.08)', text: 'text-amber-500', border: 'border-amber-500/20' },
+  hard: { bg: 'rgba(244, 63, 94, 0.08)', text: 'text-rose-500', border: 'border-rose-500/20' },
+}
+
+const stagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } }
+}
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
 }
 
 export default function SpotDetailPage() {
@@ -46,8 +62,9 @@ export default function SpotDetailPage() {
   const [loading, setLoading] = useState(true)
   const [avgRating, setAvgRating] = useState(0)
   const [currentUser, setCurrentUser] = useState<any>(null)
+  const [topSpots, setTopSpots] = useState<any[]>([])
 
-  // Active photo index — 0 = best photo (most liked), others are cards
+  // Active photo index (0 = best photo)
   const [activeIndex, setActiveIndex] = useState(0)
 
   // Review form
@@ -56,8 +73,9 @@ export default function SpotDetailPage() {
   const [reviewComment, setReviewComment] = useState('')
   const [submittingReview, setSubmittingReview] = useState(false)
 
-  // Info panel toggle for mobile
-  const [showInfo, setShowInfo] = useState(false)
+  // Carousel State
+  const [carouselIdx, setCarouselIdx] = useState(0)
+  const carouselRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!id) return
@@ -93,12 +111,33 @@ export default function SpotDetailPage() {
           .eq('spot_id', id)
           .order('created_at', { ascending: false })
           .limit(10)
-        const fetched = (reviewsData as SpotReview[]) || []
-        setReviews(fetched)
-        if (fetched.length > 0) {
-          const sum = fetched.reduce((acc, r) => acc + (r.rating || 0), 0)
-          setAvgRating(Math.round((sum / fetched.length) * 10) / 10)
+        
+        const fetchedReviews = (reviewsData as SpotReview[]) || []
+        setReviews(fetchedReviews)
+        if (fetchedReviews.length > 0) {
+          const sum = fetchedReviews.reduce((acc, r) => acc + (r.rating || 0), 0)
+          setAvgRating(Math.round((sum / fetchedReviews.length) * 10) / 10)
         }
+
+        // Fetch other top spots
+        const { data: allSpotsData } = await supabase
+          .from('spots')
+          .select('*, spot_photos(photo_url), spot_reviews(rating)')
+
+        if (allSpotsData) {
+          const mappedSpots = allSpotsData.map((s: any) => {
+            const sum = s.spot_reviews.reduce((a: number, r: any) => a + (r.rating || 0), 0)
+            const avg = s.spot_reviews.length > 0 ? sum / s.spot_reviews.length : 0
+            return {
+              ...s,
+              avgRating: avg,
+              hero_photo_url: s.spot_photos?.[0]?.photo_url || null
+            }
+          })
+          mappedSpots.sort((a, b) => b.avgRating - a.avgRating)
+          setTopSpots(mappedSpots.filter(s => s.id !== id).slice(0, 5))
+        }
+
       } catch (err) {
         console.error('Error fetching spot:', err)
         router.push('/map')
@@ -115,7 +154,6 @@ export default function SpotDetailPage() {
       const updated = prev.map(p =>
         p.id === photoId ? { ...p, hasLiked: !currentlyLiked, likesCount: currentlyLiked ? p.likesCount - 1 : p.likesCount + 1 } : p
       )
-      // After liking, re-sort but keep activeIndex pointing to same photo
       return updated
     })
     try {
@@ -148,6 +186,22 @@ export default function SpotDetailPage() {
     }
   }
 
+  const handleCarouselScroll = () => {
+    if (carouselRef.current) {
+      const scrollLeft = carouselRef.current.scrollLeft
+      const cardWidth = 300 + 16 // card width + gap
+      const newIdx = Math.round(scrollLeft / cardWidth)
+      setCarouselIdx(newIdx)
+    }
+  }
+
+  const scrollToIdx = (n: number) => {
+    if (carouselRef.current) {
+      const cardWidth = 300 + 16
+      carouselRef.current.scrollTo({ left: n * cardWidth, behavior: 'smooth' })
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -160,417 +214,346 @@ export default function SpotDetailPage() {
   }
   if (!spot) return null
 
-  const activePhoto = photos[activeIndex]
-  const cardPhotos = photos.filter((_, i) => i !== activeIndex)
+  const activePhotoObj = photos[activeIndex]
+  const diffStyle = DIFFICULTY_STYLE[spot.difficulty || 'easy'] || DIFFICULTY_STYLE.easy
 
   return (
-    <main className="relative w-full h-screen overflow-hidden bg-black text-white">
-
+    <main className="min-h-screen w-full bg-background text-foreground pb-32">
+      
       {/* ───── FLOATING NAVBAR ───── */}
-      <div className="absolute top-0 left-0 w-full z-[4000] pointer-events-none">
+      <div className="fixed top-0 left-0 w-full z-[4000] pointer-events-none">
         <div className="pointer-events-auto">
           <Navbar />
         </div>
       </div>
 
-      {/* ───── HERO BACKGROUND IMAGE ───── */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activePhoto?.id || 'empty'}
-          initial={{ opacity: 0, scale: 1.04 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-0 z-0"
-        >
-          {activePhoto?.photo_url ? (
-            <Image
-              src={activePhoto.photo_url}
-              alt={spot.name}
-              fill
-              priority
-              className="object-cover"
-              sizes="100vw"
-            />
-          ) : (
-            <div className="w-full h-full bg-neutral-900 flex items-center justify-center">
-              <Camera className="w-24 h-24 text-white/10" />
-            </div>
-          )}
-          {/* Gradient overlays */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-transparent hidden md:block" />
-        </motion.div>
-      </AnimatePresence>
+      {/* ───── HERO: IMMERSIVE FULL SCREEN ───── */}
+      <section className="relative w-full h-screen min-h-[600px] bg-black overflow-hidden group">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activePhotoObj?.id || 'empty'}
+            initial={{ opacity: 0, scale: 1.04 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-0 z-0"
+          >
+            {activePhotoObj?.photo_url ? (
+              <Image src={activePhotoObj.photo_url} alt={spot.name} fill priority className="object-cover" sizes="100vw" />
+            ) : (
+              <div className="w-full h-full bg-neutral-900 flex items-center justify-center">
+                <Camera className="w-24 h-24 text-white/10" />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-black/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-transparent hidden md:block" />
+          </motion.div>
+        </AnimatePresence>
 
-      {/* ───── MAIN UI LAYER ───── */}
-      <div className="absolute inset-0 z-20 flex flex-col">
-
-        {/* ── DESKTOP LAYOUT ─────────────────────────────────────────── */}
-        <div className="hidden md:flex flex-1 overflow-hidden">
-
-          {/* LEFT: Title & Info */}
-          <div className="flex flex-col justify-end p-10 lg:p-16 pb-32 w-[55%] lg:w-[60%]">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-              className="max-w-xl"
-            >
-              {/* Back */}
-              <button
-                onClick={() => router.back()}
-                className="mb-6 flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors group"
-              >
-                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                Kembali
+        <div className="absolute inset-0 z-20 flex flex-col justify-end p-6 md:p-16 pb-24 md:pb-32">
+          <motion.div variants={stagger} initial="hidden" animate="visible" className="max-w-4xl">
+            <motion.div variants={fadeUp} className="mb-6">
+              <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors">
+                <ArrowLeft className="w-4 h-4" /> Kembali
               </button>
+            </motion.div>
 
-              {/* Genre Tags */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                {spot.genre?.map(g => (
-                  <span key={g} className="px-3 py-1 bg-amber-500 text-white text-[10px] font-mono font-black rounded uppercase tracking-wider">
-                    {g}
-                  </span>
-                ))}
+            <motion.div variants={fadeUp} className="flex flex-wrap gap-2 mb-4">
+              {spot.genre?.map(g => (
+                <span key={g} className="px-3 py-1 bg-amber-500 text-white text-[10px] font-mono font-black rounded uppercase tracking-wider shadow-lg">
+                  {g}
+                </span>
+              ))}
+            </motion.div>
+
+            <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl lg:text-[84px] font-display font-black leading-[0.9] tracking-tighter text-white mb-6 drop-shadow-2xl">
+              {spot.name}
+            </motion.h1>
+
+            <motion.div variants={fadeUp} className="flex items-center flex-wrap gap-4">
+              <div className="flex items-center gap-1.5 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-full shadow-xl">
+                <MapPin className="w-4 h-4 text-amber-400" />
+                <span className="text-white/90 text-sm font-medium">{spot.latitude.toFixed(4)}, {spot.longitude.toFixed(4)}</span>
               </div>
-
-              {/* Spot Name */}
-              <h1 className="text-6xl lg:text-8xl font-display font-black leading-none tracking-tighter text-white mb-4 drop-shadow-2xl">
-                {spot.name}
-              </h1>
-
-              {/* Description (short) */}
-              {spot.description && (
-                <p className="text-white/70 text-sm leading-relaxed mb-6 max-w-sm line-clamp-3">
-                  {spot.description}
-                </p>
-              )}
-
-              {/* Meta Row */}
-              <div className="flex items-center flex-wrap gap-3">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-sm">
-                  <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-white/80 text-xs">{spot.latitude.toFixed(4)}, {spot.longitude.toFixed(4)}</span>
-                </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-sm">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  <span className="text-white/80 text-xs font-bold">{avgRating > 0 ? avgRating : 'Baru'}</span>
-                  <span className="text-white/40 text-xs">({reviews.length})</span>
-                </div>
-                {activePhoto && (
-                  <button
-                    onClick={() => handleToggleLike(activePhoto.id, activePhoto.hasLiked)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-all ${activePhoto.hasLiked ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white/10 backdrop-blur-md border-white/10 text-white hover:bg-white/20'}`}
-                  >
-                    <Heart className={`w-3.5 h-3.5 ${activePhoto.hasLiked ? 'fill-white' : ''}`} />
-                    <span className="text-xs font-bold">{activePhoto.likesCount}</span>
-                  </button>
-                )}
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${spot.latitude},${spot.longitude}`}
-                  target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-4 py-1.5 bg-white text-black rounded-full text-xs font-bold hover:bg-amber-400 transition-colors"
+              <div className="flex items-center gap-1.5 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-full shadow-xl">
+                <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                <span className="text-white font-bold text-sm">{avgRating > 0 ? avgRating : 'Baru'}</span>
+                <span className="text-white/60 text-xs">({reviews.length} ulasan)</span>
+              </div>
+              {activePhotoObj && (
+                <button
+                  onClick={() => handleToggleLike(activePhotoObj.id, activePhotoObj.hasLiked)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border transition-all shadow-xl ${activePhotoObj.hasLiked ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white/10 backdrop-blur-md border-white/10 text-white hover:bg-white/20'}`}
                 >
-                  <Navigation className="w-3.5 h-3.5" />
-                  Navigasi
-                </a>
-              </div>
-
-              {/* Photographer */}
-              {activePhoto?.users?.username && (
-                <div className="mt-6 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20">
-                    {activePhoto.users.avatar_url ? (
-                      <img src={activePhoto.users.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-amber-500 flex items-center justify-center text-white font-bold text-xs">
-                        {activePhoto.users.username[0].toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-white/60 text-xs">
-                    Foto oleh{' '}
-                    <Link href={`/profile/${activePhoto.users.username}`} className="text-white font-bold hover:text-amber-400 transition-colors">
-                      @{activePhoto.users.username}
-                    </Link>
-                  </span>
-                </div>
+                  <Heart className={`w-4 h-4 ${activePhotoObj.hasLiked ? 'fill-white' : ''}`} />
+                  <span>{activePhotoObj.likesCount}</span>
+                </button>
               )}
             </motion.div>
-          </div>
-
-          {/* RIGHT: Photo Cards Stack + Info Panel */}
-          <div className="flex flex-col justify-end pb-10 pr-10 gap-6 w-[45%] lg:w-[40%]">
-
-            {/* Photo Index Counter */}
-            {photos.length > 0 && (
-              <div className="self-end text-right">
-                <span className="text-6xl font-display font-black text-white/10 leading-none">
-                  {String(activeIndex + 1).padStart(2, '0')}
-                </span>
-                <span className="text-sm text-white/30 block">/{String(photos.length).padStart(2, '0')}</span>
-              </div>
-            )}
-
-            {/* Photo Cards Horizontal Scroll */}
-            {photos.length > 1 && (
-              <div>
-                <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-3">Foto Lainnya</p>
-                <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  {photos.map((photo, i) => {
-                    if (i === activeIndex) return null
-                    return (
-                      <button
-                        key={photo.id}
-                        onClick={() => setActiveIndex(i)}
-                        className="shrink-0 snap-center relative w-[160px] h-[110px] rounded-2xl overflow-hidden border-2 border-white/10 hover:border-amber-400 transition-all group"
-                      >
-                        {photo.photo_url ? (
-                          <Image src={photo.photo_url} alt="" fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="160px" />
-                        ) : (
-                          <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                            <Camera className="w-6 h-6 text-white/20" />
-                          </div>
-                        )}
-                        {/* Card overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-2">
-                          <div className="flex items-center gap-1 text-white/80">
-                            <Heart className={`w-3 h-3 ${photo.hasLiked ? 'fill-amber-400 text-amber-400' : ''}`} />
-                            <span className="text-[9px] font-bold">{photo.likesCount}</span>
-                          </div>
-                        </div>
-                        {/* Photographer */}
-                        {photo.users?.username && (
-                          <div className="absolute top-2 left-2">
-                            <div className="w-5 h-5 rounded-full overflow-hidden border border-white/30">
-                              {photo.users.avatar_url ? (
-                                <img src={photo.users.avatar_url} className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="w-full h-full bg-amber-500 flex items-center justify-center text-white text-[7px] font-bold">
-                                  {photo.users.username[0].toUpperCase()}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Navigation Arrows */}
-            {photos.length > 1 && (
-              <div className="flex items-center gap-2 self-end">
-                <button
-                  onClick={() => setActiveIndex(i => Math.max(0, i - 1))}
-                  disabled={activeIndex === 0}
-                  className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-white/20 transition-all disabled:opacity-30"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => setActiveIndex(i => Math.min(photos.length - 1, i + 1))}
-                  disabled={activeIndex === photos.length - 1}
-                  className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-white/20 transition-all disabled:opacity-30"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-            )}
-
-          </div>
+          </motion.div>
         </div>
+      </section>
 
-        {/* ── MOBILE LAYOUT ─────────────────────────────────────────────── */}
-        <div className="flex md:hidden flex-col h-full">
-
-          {/* TOP AREA: back button (space for navbar) */}
-          <div className="pt-[80px] px-5">
-            <button
-              onClick={() => router.back()}
-              className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" /> Kembali
-            </button>
+      {/* ───── SECTIONS BELOW HERO ───── */}
+      <section className="relative z-30 max-w-7xl mx-auto px-6 md:px-12 pt-16 grid grid-cols-1 lg:grid-cols-12 gap-16">
+        
+        {/* Left Column — Info & Gallery */}
+        <div className="lg:col-span-8 space-y-16">
+          
+          {/* Info Bento Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="relative p-6 rounded-[24px] overflow-hidden group border border-border bg-surface shadow-md">
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent -z-10" />
+              <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 group-hover:opacity-10 transition-all duration-500">
+                <Clock className="w-20 h-20 text-amber-500" />
+              </div>
+              
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                  <Clock className="w-5 h-5 text-amber-500" />
+                </div>
+                <h4 className="text-xs font-mono uppercase tracking-widest text-muted font-bold">Waktu Terbaik</h4>
+              </div>
+              <div className="w-full h-px bg-border/50 mb-4" />
+              <p className="text-2xl font-display font-bold text-foreground">
+                {BEST_TIME_LABEL[spot.best_time || ''] || spot.best_time || '-'}
+              </p>
+            </div>
+            
+            <div className="relative p-6 rounded-[24px] overflow-hidden group border bg-surface shadow-md" style={{ borderColor: diffStyle.border }}>
+              <div className="absolute inset-0 -z-10" style={{ background: diffStyle.bg }} />
+              <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 group-hover:opacity-10 transition-all duration-500">
+                <Zap className={`w-20 h-20 ${diffStyle.text}`} />
+              </div>
+              
+              <div className="flex items-center gap-3 mb-4">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center border bg-background/50 ${diffStyle.border}`}>
+                  <Zap className={`w-5 h-5 ${diffStyle.text}`} />
+                </div>
+                <h4 className="text-xs font-mono uppercase tracking-widest text-muted font-bold">Aksesibilitas</h4>
+              </div>
+              <div className="w-full h-px bg-border/50 mb-4" />
+              <p className="text-2xl font-display font-bold text-foreground">
+                {DIFFICULTY_LABEL[spot.difficulty || 'easy']}
+              </p>
+            </div>
           </div>
 
-          {/* SPACER */}
-          <div className="flex-1" />
+          <article className="prose prose-lg dark:prose-invert max-w-none prose-p:leading-relaxed">
+            <p className="text-xl text-foreground/80 font-medium">
+              {spot.description || "Belum ada deskripsi untuk spot ini."}
+            </p>
+          </article>
 
-          {/* BOTTOM INFO SECTION */}
-          <div className="px-5 pb-4">
-
-            {/* Genre + Title */}
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {spot.genre?.map(g => (
-                <span key={g} className="px-2 py-0.5 bg-amber-500 text-white text-[9px] font-mono font-black rounded uppercase tracking-wider">{g}</span>
-              ))}
-            </div>
-            <h1 className="text-4xl font-display font-black leading-none tracking-tighter text-white mb-3">
-              {spot.name}
-            </h1>
-
-            {/* Meta */}
-            <div className="flex items-center flex-wrap gap-2 mb-4">
-              <div className="flex items-center gap-1 px-2.5 py-1 bg-white/10 backdrop-blur-md border border-white/10 rounded-full">
-                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                <span className="text-white/80 text-xs font-bold">{avgRating > 0 ? avgRating : 'Baru'}</span>
+          {/* Photo Gallery (Semua Sudut) */}
+          {photos.length > 0 && (
+            <div>
+              <div className="flex items-center gap-3 mb-6 bg-surface-alt px-5 py-3 rounded-2xl border border-border">
+                <Camera className="w-5 h-5 text-amber-primary" />
+                <span className="font-bold text-sm">{photos.length} foto dari komunitas</span>
               </div>
-              {activePhoto && (
-                <button
-                  onClick={() => handleToggleLike(activePhoto.id, activePhoto.hasLiked)}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs border transition-all ${activePhoto.hasLiked ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white/10 backdrop-blur-md border-white/10 text-white'}`}
-                >
-                  <Heart className={`w-3 h-3 ${activePhoto.hasLiked ? 'fill-white' : ''}`} />
-                  <span className="font-bold">{activePhoto.likesCount}</span>
-                </button>
-              )}
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${spot.latitude},${spot.longitude}`}
-                target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1 px-3 py-1 bg-white text-black rounded-full text-xs font-bold"
-              >
-                <Navigation className="w-3 h-3" /> Navigasi
-              </a>
-            </div>
-
-            {/* Photographer on mobile */}
-            {activePhoto?.users?.username && (
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-6 h-6 rounded-full overflow-hidden border border-white/20">
-                  {activePhoto.users.avatar_url ? (
-                    <img src={activePhoto.users.avatar_url} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-amber-500 flex items-center justify-center text-white font-bold text-[8px]">
-                      {activePhoto.users.username[0].toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <span className="text-white/50 text-xs">
-                  oleh <Link href={`/profile/${activePhoto.users.username}`} className="text-white font-bold">@{activePhoto.users.username}</Link>
-                </span>
-              </div>
-            )}
-
-            {/* Thumbnail Cards - horizontal scroll, mobile */}
-            {photos.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-3 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {photos.map((photo, i) => (
                   <button
                     key={photo.id}
-                    onClick={() => setActiveIndex(i)}
-                    className={`shrink-0 snap-center relative w-[90px] h-[65px] rounded-xl overflow-hidden border-2 transition-all ${i === activeIndex ? 'border-amber-400 scale-105' : 'border-white/10 hover:border-white/40'}`}
+                    onClick={() => {
+                      setActiveIndex(i)
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }}
+                    className={`relative aspect-square rounded-[20px] overflow-hidden group bg-surface-alt outline-none transition-all ${
+                      i === activeIndex ? 'ring-2 ring-amber-primary ring-offset-2 ring-offset-background' : 'hover:ring-2 hover:ring-border hover:ring-offset-2 hover:ring-offset-background'
+                    }`}
                   >
-                    {photo.photo_url ? (
-                      <Image src={photo.photo_url} alt="" fill className="object-cover" sizes="90px" />
-                    ) : (
-                      <div className="w-full h-full bg-white/5" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    {i === activeIndex && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-2 h-2 rounded-full bg-amber-400" />
-                      </div>
-                    )}
+                    <img src={photo.photo_url} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    {/* Hover Number Overlay */}
+                    <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-md text-[10px] font-mono font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                      {String(i + 1).padStart(2, '0')}
+                    </div>
                   </button>
                 ))}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Info Panel Toggle */}
-            <button
-              onClick={() => setShowInfo(v => !v)}
-              className="w-full mt-1 py-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-xl text-xs font-bold text-white/80 hover:bg-white/20 transition-colors flex items-center justify-center gap-2"
-            >
-              <MessageSquare className="w-3.5 h-3.5" />
-              {showInfo ? 'Tutup Info' : 'Lihat Info & Ulasan'}
-            </button>
-
-            {/* Mobile Info Panel (collapsible) */}
-            <AnimatePresence>
-              {showInfo && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden mt-2"
-                >
-                  <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4 space-y-4">
-                    {/* Metrics */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                        <Clock className="w-4 h-4 text-amber-400 mb-1" />
-                        <p className="text-[9px] text-white/50 uppercase tracking-wider font-mono">Waktu Terbaik</p>
-                        <p className="text-sm font-bold text-white">{BEST_TIME_LABEL[spot.best_time || ''] || spot.best_time || '-'}</p>
-                      </div>
-                      <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                        <Zap className="w-4 h-4 text-white/50 mb-1" />
-                        <p className="text-[9px] text-white/50 uppercase tracking-wider font-mono">Akses</p>
-                        <p className="text-sm font-bold text-white">{DIFFICULTY_LABEL[spot.difficulty || 'easy']}</p>
-                      </div>
-                    </div>
-
-                    {spot.description && (
-                      <p className="text-white/70 text-xs leading-relaxed">{spot.description}</p>
-                    )}
-
-                    {/* Reviews */}
-                    <div className="border-t border-white/10 pt-3">
-                      <h3 className="text-xs font-bold mb-2">Ulasan ({reviews.length})</h3>
-                      {currentUser ? (
-                        <div className="mb-3">
-                          <div className="flex gap-1 mb-2">
-                            {[1,2,3,4,5].map(n => (
-                              <button key={n} onClick={() => setReviewRating(n)} onMouseEnter={() => setReviewHover(n)} onMouseLeave={() => setReviewHover(0)}>
-                                <Star className={`w-4 h-4 ${n <= (reviewHover || reviewRating) ? 'fill-amber-400 text-amber-400' : 'text-white/20'}`} />
-                              </button>
-                            ))}
-                          </div>
-                          <textarea
-                            className="w-full bg-white/5 border border-white/10 text-white text-xs p-2 rounded-lg min-h-[50px] resize-none focus:outline-none focus:border-amber-400/50"
-                            placeholder="Tulis ulasan..."
-                            value={reviewComment}
-                            onChange={e => setReviewComment(e.target.value)}
-                          />
-                          <button
-                            onClick={handleSubmitReview}
-                            disabled={reviewRating === 0 || submittingReview}
-                            className="mt-1 w-full py-1.5 bg-white text-black rounded-lg text-xs font-bold flex items-center justify-center gap-1 disabled:opacity-50"
-                          >
-                            {submittingReview ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                            Kirim
-                          </button>
+          {/* Carousel Spot Terpopuler */}
+          {topSpots.length > 0 && (
+            <div className="pt-12 border-t border-border">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-3xl font-display font-bold">Spot Terpopuler</h3>
+                
+                {/* Carousel Navigation */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => scrollToIdx(Math.max(0, carouselIdx - 1))}
+                    disabled={carouselIdx === 0}
+                    className="w-10 h-10 rounded-full bg-surface-alt flex items-center justify-center hover:bg-muted/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => scrollToIdx(Math.min(topSpots.length - 1, carouselIdx + 1))}
+                    disabled={carouselIdx >= topSpots.length - 1}
+                    className="w-10 h-10 rounded-full bg-surface-alt flex items-center justify-center hover:bg-muted/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              
+              <div 
+                ref={carouselRef}
+                onScroll={handleCarouselScroll}
+                className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              >
+                {topSpots.map((ts) => (
+                  <Link
+                    key={ts.id}
+                    href={`/spot/${ts.id}`}
+                    className="w-[300px] shrink-0 snap-center group block rounded-[24px] overflow-hidden bg-surface border border-border hover:border-amber-primary/40 transition-all shadow-md"
+                  >
+                    <div className="aspect-[4/3] relative overflow-hidden bg-surface-alt">
+                      <img src={ts.hero_photo_url || 'https://via.placeholder.com/400'} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                      
+                      {/* Genre Chip */}
+                      {ts.genre?.[0] && (
+                        <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-md text-[10px] font-mono font-bold text-white uppercase tracking-wider">
+                          {ts.genre[0]}
                         </div>
-                      ) : (
-                        <Link href="/login" className="block text-center py-2 bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white/80 mb-2">Login untuk ulasan</Link>
                       )}
-                      <div className="space-y-2 max-h-[150px] overflow-y-auto">
-                        {reviews.slice(0, 5).map(r => (
-                          <div key={r.id} className="p-2 bg-white/5 rounded-xl border border-white/10">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-[10px] font-bold">{r.users?.username || 'Anonim'}</span>
-                              <div className="flex gap-0.5">
-                                {Array.from({length:5}).map((_,i) => <Star key={i} className={`w-2.5 h-2.5 ${i < (r.rating||0) ? 'fill-amber-400 text-amber-400' : 'text-white/20'}`}/>)}
-                              </div>
-                            </div>
-                            {r.comment && <p className="text-[10px] text-white/60">{r.comment}</p>}
-                          </div>
-                        ))}
+                      
+                      {/* Rating Badge */}
+                      <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 bg-black/60 backdrop-blur-sm rounded-lg text-white">
+                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                        <span className="font-bold text-xs">{ts.avgRating > 0 ? ts.avgRating.toFixed(1) : 'Baru'}</span>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                    <div className="p-4">
+                      <h4 className="font-bold text-lg leading-tight mb-1 group-hover:text-amber-primary transition-colors line-clamp-1">{ts.name}</h4>
+                      <p className="text-[11px] text-muted font-mono uppercase">
+                        {DIFFICULTY_LABEL[ts.difficulty || 'easy']} • {BEST_TIME_LABEL[ts.best_time || '']}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              
+              {/* Dots Indicator */}
+              <div className="flex items-center justify-center gap-1.5 mt-4">
+                {topSpots.map((_, i) => (
+                  <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === carouselIdx ? 'w-6 bg-amber-primary' : 'w-1.5 bg-border'}`} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-      </div>
+        {/* Right Column — Reviews Panel */}
+        <div className="lg:col-span-4">
+          <div className="sticky top-28 space-y-8">
+            <div className="flex items-center justify-between pb-4 border-b border-border">
+              <h3 className="text-2xl font-display font-bold flex items-center gap-3">
+                <MessageSquare className="w-6 h-6 text-amber-primary" /> Review
+              </h3>
+              <span className="text-xs font-mono font-bold px-3 py-1 bg-surface-alt rounded-full">{reviews.length} Ulasan</span>
+            </div>
+
+            {currentUser ? (
+              <div className="p-6 rounded-[24px] bg-surface border border-border shadow-lg">
+                <p className="text-sm font-bold mb-4">Bagaimana pengalamanmu?</p>
+                {/* Touch-target wrappers for stars */}
+                <div className="flex gap-2 mb-6">
+                  {[1,2,3,4,5].map(n => (
+                    <button
+                      key={n}
+                      onClick={() => setReviewRating(n)}
+                      onMouseEnter={() => setReviewHover(n)}
+                      onMouseLeave={() => setReviewHover(0)}
+                      className="p-1 -m-1 focus:outline-none transition-transform hover:scale-110"
+                    >
+                      <Star
+                        className={`w-10 h-10 md:w-8 md:h-8 transition-colors ${
+                          n <= (reviewHover || reviewRating)
+                            ? 'fill-amber-primary text-amber-primary drop-shadow-[0_0_8px_rgba(232,105,42,0.4)]'
+                            : 'text-muted/20'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  className="w-full bg-background border border-border py-3 px-4 rounded-xl text-sm min-h-[100px] mb-4 resize-none focus:border-amber-primary/50 focus:ring-1 focus:ring-amber-primary/50 outline-none transition-all"
+                  placeholder="Ceritakan detail akses, cuaca, atau angle terbaikmu..."
+                  value={reviewComment}
+                  onChange={e => setReviewComment(e.target.value)}
+                />
+                <button
+                  onClick={handleSubmitReview}
+                  disabled={reviewRating === 0 || submittingReview}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-foreground text-background rounded-xl font-bold hover:opacity-90 transition-all disabled:opacity-40"
+                >
+                  {submittingReview ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
+                  Kirim Ulasan
+                </button>
+              </div>
+            ) : (
+              <div className="p-8 text-center rounded-[24px] bg-amber-primary/5 border border-amber-primary/20">
+                <Star className="w-8 h-8 text-amber-primary mx-auto mb-4" />
+                <p className="text-sm text-foreground/80 mb-6">Login untuk memberikan ulasan pada spot ini.</p>
+                <Link href="/login" className="inline-flex items-center justify-center px-6 py-3 bg-amber-primary text-white font-bold rounded-full hover:shadow-lg w-full">
+                  Login sekarang
+                </Link>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {reviews.length === 0 ? (
+                <div className="py-16 text-center rounded-[24px] border border-dashed border-border flex flex-col items-center justify-center">
+                  <Camera className="w-12 h-12 text-muted opacity-20 mb-3" />
+                  <p className="text-sm font-bold text-foreground/70">Jadilah yang pertama</p>
+                  <p className="text-xs text-muted mt-1">berbagi pengalaman di spot ini.</p>
+                </div>
+              ) : (
+                <AnimatePresence>
+                  {reviews.map((review, i) => (
+                    <motion.div 
+                      key={review.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.1 }}
+                      className="p-5 rounded-[20px] bg-surface border border-border group"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <Link href={`/profile/${review.users?.username}`} className="w-8 h-8 rounded-full bg-amber-primary/10 border border-amber-primary/20 flex items-center justify-center text-[10px] font-bold text-amber-primary hover:bg-amber-primary hover:text-white transition-colors">
+                            {review.users?.username?.[0]?.toUpperCase() || '?'}
+                          </Link>
+                          <div>
+                            <Link href={`/profile/${review.users?.username}`} className="text-sm font-bold hover:text-amber-primary transition-colors block leading-none mb-1">
+                              {review.users?.username || 'Anonim'}
+                            </Link>
+                            <span className="text-[9px] text-muted font-mono">{new Date(review.created_at).toLocaleDateString('id-ID')}</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-0.5">
+                          {Array.from({ length: 5 }).map((_, idx) => (
+                            <Star key={idx} className={`w-3 h-3 ${idx < (review.rating || 0) ? 'fill-amber-primary text-amber-primary' : 'text-muted/20'}`} />
+                          ))}
+                        </div>
+                      </div>
+                      {review.comment && (
+                        <p className="text-sm text-foreground/80 leading-relaxed pl-11">{review.comment}</p>
+                      )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   )
 }
