@@ -14,7 +14,7 @@ const fadeUp: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } }
 }
 
-export default function HomeClient({ spots, articles, highlightUser, communityPhotos }: { spots: any[], articles: any[], highlightUser: any, communityPhotos: any[] }) {
+export default function HomeClient({ spots, highlightUser, communityPhotos }: { spots: any[], highlightUser: any, communityPhotos: any[] }) {
   return (
     <main className="min-h-screen bg-background text-foreground selection:bg-amber-primary selection:text-white overflow-hidden">
       <Navbar />
@@ -125,48 +125,6 @@ export default function HomeClient({ spots, articles, highlightUser, communityPh
         </div>
       </section>
 
-      {/* ─────────── SECTION 3: Cerita di Balik Lensa ─────────── */}
-      <section className="py-32 bg-surface-alt border-y border-border">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
-            <div>
-              <span className="text-xs font-mono uppercase tracking-[0.25em] text-amber-primary mb-4 block">Artikel & Jurnal</span>
-              <h2 className="text-4xl md:text-5xl font-display font-bold">Cerita di Balik Lensa</h2>
-            </div>
-            <Link href="#" className="px-6 py-3 border border-border rounded-full text-sm font-bold hover-surface transition-colors whitespace-nowrap">
-              Baca Semua Artikel
-            </Link>
-          </div>
-
-          <div className="flex flex-col gap-12">
-            {articles.map((story, i) => (
-              <div key={story.id} className="flex flex-col md:flex-row gap-8 items-center group cursor-pointer border-b border-border/40 pb-12 last:border-0 last:pb-0">
-                <div className="w-full md:w-1/3 aspect-[4/3] md:aspect-auto md:h-64 rounded-[24px] overflow-hidden shrink-0">
-                  <img src={story.cover_url} alt={story.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                </div>
-                <div className="w-full md:w-2/3 flex flex-col items-start h-full py-2">
-                  <span className="px-3 py-1 bg-amber-primary/10 text-amber-primary text-[10px] font-bold font-mono rounded-full tracking-wider mb-4">
-                    {story.category_tag}
-                  </span>
-                  <h3 className="text-2xl md:text-3xl font-display font-bold mb-4 group-hover:text-amber-primary transition-colors leading-tight max-w-2xl">
-                    {story.title}
-                  </h3>
-                  <p className="text-muted leading-relaxed mb-6 max-w-2xl">
-                    {story.description}
-                  </p>
-                  <div className="flex items-center justify-between w-full mt-auto">
-                    <p className="text-xs text-muted font-medium uppercase tracking-wider">
-                      Oleh <span className="text-foreground">{story.users?.full_name || story.users?.username || 'Redaksi'}</span> • {new Date(story.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}
-                    </p>
-                    <ArrowUpRight className="w-5 h-5 text-muted group-hover:text-amber-primary transition-colors" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ─────────── SECTION 4: Sorotan Komunitas ─────────── */}
       <section className="py-32 px-6 md:px-12 max-w-7xl mx-auto">
         <div className="text-center mb-16">
@@ -199,43 +157,30 @@ export default function HomeClient({ spots, articles, highlightUser, communityPh
       {/* ─────────── FOOTER ─────────── */}
       <footer className="bg-surface-alt border-t border-border pt-24 pb-12 px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-          <div className="md:col-span-1">
+          <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-6">
               <Camera className="w-6 h-6 text-amber-primary" />
               <span className="font-display font-bold text-2xl tracking-tight">PhotoTracker</span>
             </div>
-            <p className="text-sm text-muted leading-relaxed">
-              Platform direktori spot foto nomor satu di Indonesia. Temukan, bagikan, dan berkembang bersama ribuan fotografer lainnya.
+            <p className="text-sm text-muted leading-relaxed max-w-sm">
+              Platform direktori spot foto di Indonesia. Temukan lokasi terbaik, bagikan sudut pandangmu, dan berkembang bersama komunitas.
             </p>
           </div>
           
           <div>
-            <h4 className="font-bold mb-6 tracking-wide">Eksplorasi</h4>
-            <ul className="space-y-4 text-sm text-muted">
+            <h4 className="font-bold mb-6 tracking-wide text-foreground">Eksplorasi</h4>
+            <ul className="space-y-4 text-sm text-muted font-medium">
               <li><Link href="/" className="hover:text-amber-primary transition-colors">Beranda</Link></li>
               <li><Link href="/map" className="hover:text-amber-primary transition-colors">Peta Spot Interaktif</Link></li>
               <li><Link href="/spots" className="hover:text-amber-primary transition-colors">Direktori Lokasi</Link></li>
-              <li><Link href="/add-spot" className="hover:text-amber-primary transition-colors">Bagikan Spot Baru</Link></li>
             </ul>
           </div>
           
           <div>
-            <h4 className="font-bold mb-6 tracking-wide">Komunitas</h4>
-            <ul className="space-y-4 text-sm text-muted">
+            <h4 className="font-bold mb-6 tracking-wide text-foreground">Aktivitas</h4>
+            <ul className="space-y-4 text-sm text-muted font-medium">
               <li><Link href="/profile" className="hover:text-amber-primary transition-colors">Profil Saya</Link></li>
-              <li><Link href="/leaderboard" className="hover:text-amber-primary transition-colors">Peringkat Kontributor</Link></li>
-              <li><Link href="/guidelines" className="hover:text-amber-primary transition-colors">Panduan Komunitas</Link></li>
-              <li><Link href="/journal" className="hover:text-amber-primary transition-colors">Jurnal Fotografi</Link></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="font-bold mb-6 tracking-wide">Dukungan</h4>
-            <ul className="space-y-4 text-sm text-muted">
-              <li><Link href="/faq" className="hover:text-amber-primary transition-colors">Pusat Bantuan (FAQ)</Link></li>
-              <li><Link href="/contact" className="hover:text-amber-primary transition-colors">Hubungi Kami</Link></li>
-              <li><Link href="/privacy" className="hover:text-amber-primary transition-colors">Kebijakan Privasi</Link></li>
-              <li><Link href="/terms" className="hover:text-amber-primary transition-colors">Syarat & Ketentuan</Link></li>
+              <li><Link href="/add-spot" className="hover:text-amber-primary transition-colors">Bagikan Spot Baru</Link></li>
             </ul>
           </div>
         </div>

@@ -193,4 +193,7 @@ export interface SpotWithPhoto {
   hero_photo_url: string | null  // dari subquery RPC, bukan kolom langsung
   added_by: string | null
   created_at: string
+  // Joined dari tabel users (di-fetch manual setelah RPC)
+  added_by_username?: string | null
+  added_by_avatar?: string | null
 }

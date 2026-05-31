@@ -110,7 +110,7 @@ export default function PublicProfilePage() {
       <Navbar />
 
       {/* Profile Header */}
-      <div className="relative pt-12 pb-12 px-6 overflow-hidden">
+      <div className="relative pt-[var(--nav-height)] pb-12 px-6 overflow-hidden">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-10 items-center md:items-start relative z-10">
           {/* Avatar */}
           <div className="relative">

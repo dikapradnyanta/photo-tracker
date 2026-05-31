@@ -1,25 +1,42 @@
 'use client'
 
 import Link from 'next/link'
-import { Camera, Map as MapIcon, User, PlusCircle, Search } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { PlusCircle, Menu, X, Home, Map as MapIcon, User } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { ThemeToggle } from './ThemeToggle'
 import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null)
   const pathname = usePathname()
   const [isScrolled, setIsScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20)
     }
-    window.addEventListener('scroll', handleScroll)
+    
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Close menu on route change
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [pathname])
+
+  // Lock body scroll when menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [menuOpen])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -34,77 +51,217 @@ export default function Navbar() {
   }, [])
 
   const navItems = [
-    { name: 'Home', path: '/' },
-    { name: 'Peta Spot', path: '/map' },
-    { name: 'Profil', path: '/profile' }
+    { name: 'Home', path: '/', icon: Home },
+    { name: 'Peta Spot', path: '/map', icon: MapIcon },
+    { name: 'Profil', path: '/profile', icon: User },
   ]
 
   return (
-    <motion.nav 
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className={`fixed top-0 left-0 right-0 z-[3000] transition-all duration-300 ${
-        isScrolled 
-          ? 'py-4' 
-          : 'py-6'
-      }`}
-    >
-      <div className={`max-w-7xl mx-auto px-6 md:px-8 flex items-center justify-between transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-background/70 backdrop-blur-xl border border-border shadow-lg shadow-black/5 dark:shadow-black/20 rounded-full h-16' 
-          : 'bg-transparent border-transparent h-14'
-      }`}>
-        <div className="flex items-center gap-8">
+    <>
+      <motion.nav 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className={`fixed top-0 left-0 right-0 z-[3000] transition-all duration-300 pointer-events-none ${
+          isScrolled ? 'py-4' : 'py-6'
+        }`}
+      >
+        <div className={`max-w-7xl mx-auto px-6 md:px-8 flex items-center justify-between transition-all duration-300 pointer-events-auto ${
+          isScrolled 
+            ? 'bg-background/70 backdrop-blur-xl border border-border shadow-lg shadow-black/5 dark:shadow-black/20 rounded-full h-16' 
+            : 'bg-transparent border-transparent h-14'
+        }`}>
+          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group relative">
             <span className="text-2xl font-display font-bold tracking-tight z-10">
               Photo<span className="text-amber-primary italic group-hover:not-italic transition-all">Tracker</span>
             </span>
           </Link>
-        </div>
 
-        <div className="flex items-center gap-6">
-          <div className="hidden md:flex items-center gap-6">
-            {navItems.map((item) => {
-              const isActive = item.path === '/' ? pathname === '/' : pathname.startsWith(item.path);
-              return (
-                <Link 
-                  key={item.name}
-                  href={item.path === '/profile' && !user ? '/login' : item.path} 
-                  className={`relative py-2 text-sm font-medium transition-colors ${
-                    isActive ? 'text-foreground font-bold' : 'text-muted hover:text-foreground'
-                  }`}
-                >
-                  <span className="relative z-10 uppercase tracking-widest text-[11px] font-mono">{item.name}</span>
-                  {isActive && (
-                    <motion.div
-                      layoutId="navbar-active"
-                      className="absolute bottom-0 left-0 right-0 h-px bg-amber-primary"
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
-                  )}
+          {/* Desktop Nav */}
+          <div className="flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-6">
+              {navItems.map((item) => {
+                const isActive = item.path === '/' ? pathname === '/' : pathname.startsWith(item.path)
+                return (
+                  <Link 
+                    key={item.name}
+                    href={item.path === '/profile' && !user ? '/login' : item.path} 
+                    className={`relative py-2 text-sm font-medium transition-colors ${
+                      isActive ? 'text-foreground font-bold' : 'text-muted hover:text-foreground'
+                    }`}
+                  >
+                    <span className="relative z-10 uppercase tracking-widest text-[11px] font-mono">{item.name}</span>
+                    {isActive && (
+                      <motion.div
+                        layoutId="navbar-active"
+                        className="absolute bottom-0 left-0 right-0 h-px bg-amber-primary"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
+            
+            <div className="h-6 w-[1px] bg-border/20 mx-1 hidden md:block" />
+            
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              {!user && (
+                <Link href="/login" className="hidden md:flex items-center px-5 py-2 bg-foreground text-background rounded-full text-sm font-bold hover:scale-105 transition-transform">
+                  Masuk
                 </Link>
-              )
-            })}
-          </div>
-          
-          <div className="h-6 w-[1px] bg-border/20 mx-1 hidden md:block" />
-          
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            {!user && (
-              <Link href="/login" className="hidden md:flex items-center px-5 py-2 bg-foreground text-background rounded-full text-sm font-bold hover:scale-105 transition-transform">
-                Masuk
-              </Link>
-            )}
-            {user && (
-              <Link href="/add-spot" className="hidden md:flex items-center gap-2 px-5 py-2 bg-amber-primary text-white rounded-full text-sm font-bold hover:shadow-lg hover:shadow-amber-primary/30 hover:scale-105 transition-all">
-                <PlusCircle className="w-4 h-4" /> Tambah Spot
-              </Link>
-            )}
+              )}
+              {user && (
+                <Link href="/add-spot" className="hidden md:flex items-center gap-2 px-5 py-2 bg-amber-primary text-white rounded-full text-sm font-bold hover:shadow-lg hover:shadow-amber-primary/30 hover:scale-105 transition-all">
+                  <PlusCircle className="w-4 h-4" /> Tambah Spot
+                </Link>
+              )}
+
+              {/* Burger Button — mobile only */}
+              <button
+                id="burger-menu-btn"
+                onClick={() => setMenuOpen(prev => !prev)}
+                aria-label="Toggle menu"
+                className="md:hidden flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-alt transition-colors"
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  {menuOpen ? (
+                    <motion.span
+                      key="close"
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <X className="w-5 h-5" />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="open"
+                      initial={{ rotate: 90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: -90, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <Menu className="w-5 h-5" />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </motion.nav>
+      </motion.nav>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {menuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMenuOpen(false)}
+              className="fixed inset-0 z-[2900] bg-black/40 backdrop-blur-sm md:hidden"
+            />
+
+            {/* Drawer */}
+            <motion.div
+              key="drawer"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', stiffness: 350, damping: 35 }}
+              className="fixed top-0 right-0 bottom-0 z-[3100] w-[75vw] max-w-[320px] md:hidden flex flex-col"
+              style={{
+                background: 'var(--bg)',
+                borderLeft: '1px solid var(--border)',
+              }}
+            >
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
+                <span className="text-lg font-display font-bold">
+                  Photo<span className="text-amber-primary italic">Tracker</span>
+                </span>
+                <button
+                  onClick={() => setMenuOpen(false)}
+                  className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-alt transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Nav Links */}
+              <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+                {navItems.map((item, i) => {
+                  const isActive = item.path === '/' ? pathname === '/' : pathname.startsWith(item.path)
+                  const Icon = item.icon
+                  return (
+                    <motion.div
+                      key={item.name}
+                      initial={{ opacity: 0, x: 30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 + 0.1 }}
+                    >
+                      <Link
+                        href={item.path === '/profile' && !user ? '/login' : item.path}
+                        className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl font-medium transition-all ${
+                          isActive
+                            ? 'bg-amber-primary/10 text-amber-primary border border-amber-primary/20'
+                            : 'text-foreground hover:bg-surface-alt'
+                        }`}
+                      >
+                        <Icon className="w-5 h-5 shrink-0" />
+                        <span className="font-mono text-xs uppercase tracking-widest">{item.name}</span>
+                        {isActive && (
+                          <span className="ml-auto w-1.5 h-1.5 rounded-full bg-amber-primary" />
+                        )}
+                      </Link>
+                    </motion.div>
+                  )
+                })}
+              </nav>
+
+              {/* Drawer Footer */}
+              <div className="px-4 pb-8 pt-4 border-t border-border space-y-3">
+                {!user ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25 }}
+                  >
+                    <Link
+                      href="/login"
+                      className="flex items-center justify-center w-full px-5 py-3.5 bg-foreground text-background rounded-2xl text-sm font-bold hover:opacity-90 transition-opacity"
+                    >
+                      Masuk ke Akun
+                    </Link>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25 }}
+                  >
+                    <Link
+                      href="/add-spot"
+                      className="flex items-center justify-center gap-2 w-full px-5 py-3.5 bg-amber-primary text-white rounded-2xl text-sm font-bold hover:shadow-lg hover:shadow-amber-primary/30 transition-all"
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      Tambah Spot
+                    </Link>
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

@@ -37,7 +37,30 @@ export default function Map() {
       })
 
       if (error) throw error
-      setSpots(data || [])
+
+      const rawSpots: SpotWithPhoto[] = data || []
+
+      // Ambil unique user IDs yang added_by-nya ada
+      const userIds = [...new Set(rawSpots.map((s: SpotWithPhoto) => s.added_by).filter(Boolean))]
+
+      let userMap: Record<string, { username: string | null; avatar_url: string | null }> = {}
+      if (userIds.length > 0) {
+        const { data: usersData } = await supabase
+          .from('users')
+          .select('id, username, avatar_url')
+          .in('id', userIds as string[])
+        ;(usersData || []).forEach((u: any) => {
+          userMap[u.id] = { username: u.username, avatar_url: u.avatar_url }
+        })
+      }
+
+      const enriched = rawSpots.map((s: SpotWithPhoto) => ({
+        ...s,
+        added_by_username: s.added_by ? (userMap[s.added_by]?.username ?? null) : null,
+        added_by_avatar: s.added_by ? (userMap[s.added_by]?.avatar_url ?? null) : null,
+      }))
+
+      setSpots(enriched)
     } catch (error) {
       console.error('Error fetching spots:', error)
     } finally {
@@ -126,7 +149,22 @@ export default function Map() {
                     <p className="text-sm text-muted line-clamp-2 leading-relaxed">{selectedSpot.description}</p>
                   </div>
                   
-                  <div className="flex items-center justify-between mt-6">
+                  {/* Uploader info */}
+                  {selectedSpot.added_by_username && (
+                    <div className="flex items-center gap-2 mt-3">
+                      <div className="w-6 h-6 rounded-full bg-amber-primary/20 border border-amber-primary/30 flex items-center justify-center text-[10px] font-bold text-amber-primary overflow-hidden shrink-0">
+                        {selectedSpot.added_by_avatar
+                          ? <img src={selectedSpot.added_by_avatar} alt="" className="w-full h-full object-cover" />
+                          : selectedSpot.added_by_username[0].toUpperCase()
+                        }
+                      </div>
+                      <span className="text-[11px] text-muted font-mono">
+                        Ditambahkan oleh <span className="text-foreground font-bold">@{selectedSpot.added_by_username}</span>
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center gap-4">
                       <div className="text-center">
                         <span className="block text-[8px] font-mono text-muted uppercase">Waktu</span>

@@ -208,7 +208,7 @@ export default function ProfilePage() {
       <Navbar />
 
       {/* Header Profile */}
-      <div className="relative pt-24 pb-16 px-6">
+      <div className="relative pt-[var(--nav-height)] pb-16 px-6">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 relative z-10 items-end">
           
           {/* Info Area (Left, Large Typography) */}

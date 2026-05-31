@@ -12,6 +12,7 @@
   --input-bg:       #ffffff;
   --input-border:   rgba(0,0,0,0.10);
   --glow:           rgba(232, 105, 42, 0.12);
+  --nav-height:     104px;
 }
 
 .dark {

@@ -104,27 +104,62 @@ export default function AddSpotPage() {
         .from('photos')
         .getPublicUrl(filePath)
 
-      // 2. Insert Spot — merge required + detail
-      const { data: spotData, error: spotError } = await supabase.from('spots').insert({
-        name: formData.name,
-        latitude: formData.latitude,
-        longitude: formData.longitude,
-        genre: [formData.genre],
-        description: detailData.description,
-        tips_trik: detailData.tips_trik,
-        best_time: detailData.best_time,
-        difficulty: detailData.difficulty,
-        added_by: user.id,
-      }).select().single()
+      // 2. Check if a spot with the same name exists nearby (e.g., within 2km)
+      const { data: existingSpots, error: existingError } = await supabase
+        .from('spots')
+        .select('id, latitude, longitude')
+        .ilike('name', formData.name.trim());
+      
+      if (existingError) throw existingError;
 
-      if (spotError) throw spotError
+      let spotId = null;
 
-      // 3. Insert initial photo
+      if (existingSpots && existingSpots.length > 0) {
+        const R = 6371; // Earth's radius in km
+        const maxDistKm = 2.0;
+
+        for (const spot of existingSpots) {
+          const dLat = (spot.latitude - formData.latitude) * Math.PI / 180;
+          const dLon = (spot.longitude - formData.longitude) * Math.PI / 180;
+          const lat1 = formData.latitude * Math.PI / 180;
+          const lat2 = spot.latitude * Math.PI / 180;
+
+          const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+          const distance = R * c;
+
+          if (distance <= maxDistKm) {
+            spotId = spot.id;
+            break; // Found a matching nearby spot
+          }
+        }
+      }
+
+      if (!spotId) {
+        // 3a. Insert new Spot if not found nearby
+        const { data: spotData, error: spotError } = await supabase.from('spots').insert({
+          name: formData.name.trim(),
+          latitude: formData.latitude,
+          longitude: formData.longitude,
+          genre: [formData.genre],
+          description: detailData.description,
+          tips_trik: detailData.tips_trik,
+          best_time: detailData.best_time,
+          difficulty: detailData.difficulty,
+          added_by: user.id,
+        }).select().single()
+
+        if (spotError) throw spotError
+        spotId = spotData.id;
+      }
+
+      // 3b. Insert photo for the spot (either new or existing)
       await supabase.from('spot_photos').insert({
-        spot_id: spotData.id,
+        spot_id: spotId,
         user_id: user.id,
         photo_url: publicUrl,
-        caption: 'Hero Photo',
+        caption: 'Added Photo',
       })
 
       router.push('/map')
@@ -140,7 +175,7 @@ export default function AddSpotPage() {
     <main className="min-h-screen bg-background text-foreground pb-20 transition-colors">
       <Navbar />
 
-      <div className="max-w-3xl mx-auto px-6 pt-24 md:pt-32">
+      <div className="max-w-3xl mx-auto px-6 pt-[calc(var(--nav-height)+24px)]">
         <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-amber-primary transition-colors mb-8 group">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Kembali

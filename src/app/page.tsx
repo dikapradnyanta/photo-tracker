@@ -15,19 +15,6 @@ export default async function Home() {
     `)
     .limit(6);
 
-  // 2. Fetch Latest 3 Articles with Author info
-  const { data: articles } = await supabase
-    .from('articles')
-    .select(`
-      *,
-      users:author_id (
-        username,
-        full_name
-      )
-    `)
-    .order('created_at', { ascending: false })
-    .limit(3);
-
   // 3. Fetch 4 Latest Community Photos for the collage
   const { data: communityPhotos } = await supabase
     .from('spot_photos')
@@ -48,7 +35,6 @@ export default async function Home() {
   return (
     <HomeClient 
       spots={spots || []} 
-      articles={articles || []} 
       communityPhotos={communityPhotos || []} 
       highlightUser={highlightUser}
     />
