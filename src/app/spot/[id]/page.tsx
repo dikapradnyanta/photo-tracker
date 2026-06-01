@@ -67,6 +67,18 @@ export default function SpotDetailPage() {
   // Active photo index (0 = best photo)
   const [activeIndex, setActiveIndex] = useState(0)
 
+  // Filmstrip auto-scroll
+  const filmstripRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!filmstripRef.current) return
+    const thumbs = filmstripRef.current.querySelectorAll('button')
+    thumbs[activeIndex]?.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest'
+    })
+  }, [activeIndex])
+
   // Review form
   const [reviewRating, setReviewRating] = useState(0)
   const [reviewHover, setReviewHover] = useState(0)
@@ -294,8 +306,45 @@ export default function SpotDetailPage() {
         </div>
       </section>
 
+      {/* ───── FILMSTRIP GALLERY ───── */}
+      {photos.length > 1 && (
+        <div className="relative z-30 max-w-7xl mx-auto px-6 md:px-12 py-4">
+          <div
+            ref={filmstripRef}
+            className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory"
+          >
+            {photos.map((photo, i) => (
+              <button
+                key={photo.id}
+                onClick={() => setActiveIndex(i)}
+                className={`relative shrink-0 w-20 h-14 md:w-24 md:h-16 rounded-xl overflow-hidden snap-center outline-none transition-all duration-200 ${
+                  i === activeIndex 
+                    ? 'ring-2 ring-amber-primary ring-offset-2 ring-offset-background opacity-100' 
+                    : 'opacity-60 hover:opacity-100'
+                }`}
+              >
+                <img src={photo.photo_url} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-cover" />
+                
+                {/* Number Overlay */}
+                <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/60 backdrop-blur-sm rounded text-[9px] font-mono font-bold text-white">
+                  {String(i + 1).padStart(2, '0')}
+                </div>
+
+                {/* Like Badge */}
+                {photo.likesCount > 0 && (
+                  <div className="absolute bottom-1.5 right-1.5 px-1 flex items-center gap-0.5 bg-black/60 backdrop-blur-sm rounded">
+                    <Heart className="w-2.5 h-2.5 fill-white text-white" />
+                    <span className="text-[9px] font-bold text-white">{photo.likesCount}</span>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ───── SECTIONS BELOW HERO ───── */}
-      <section className="relative z-30 max-w-7xl mx-auto px-6 md:px-12 pt-16 grid grid-cols-1 lg:grid-cols-12 gap-16">
+      <section className="relative z-30 max-w-7xl mx-auto px-6 md:px-12 pt-12 md:pt-16 grid grid-cols-1 lg:grid-cols-12 gap-16">
         
         {/* Left Column — Info & Gallery */}
         <div className="lg:col-span-8 space-y-16">
@@ -344,38 +393,6 @@ export default function SpotDetailPage() {
               {spot.description || "Belum ada deskripsi untuk spot ini."}
             </p>
           </article>
-
-          {/* Photo Gallery (Semua Sudut) */}
-          {photos.length > 0 && (
-            <div>
-              <div className="flex items-center gap-3 mb-6 bg-surface-alt px-5 py-3 rounded-2xl border border-border">
-                <Camera className="w-5 h-5 text-amber-primary" />
-                <span className="font-bold text-sm">{photos.length} foto dari komunitas</span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {photos.map((photo, i) => (
-                  <button
-                    key={photo.id}
-                    onClick={() => {
-                      setActiveIndex(i)
-                      window.scrollTo({ top: 0, behavior: 'smooth' })
-                    }}
-                    className={`relative aspect-square rounded-[20px] overflow-hidden group bg-surface-alt outline-none transition-all ${
-                      i === activeIndex ? 'ring-2 ring-amber-primary ring-offset-2 ring-offset-background' : 'hover:ring-2 hover:ring-border hover:ring-offset-2 hover:ring-offset-background'
-                    }`}
-                  >
-                    <img src={photo.photo_url} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    
-                    {/* Hover Number Overlay */}
-                    <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-md text-[10px] font-mono font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                      {String(i + 1).padStart(2, '0')}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Carousel Spot Terpopuler */}
           {topSpots.length > 0 && (
