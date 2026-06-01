@@ -293,13 +293,30 @@ export default function SpotDetailPage() {
                 <span className="text-white/60 text-xs">({reviews.length} ulasan)</span>
               </div>
               {activePhotoObj && (
-                <button
-                  onClick={() => handleToggleLike(activePhotoObj.id, activePhotoObj.hasLiked)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border transition-all shadow-xl ${activePhotoObj.hasLiked ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white/10 backdrop-blur-md border-white/10 text-white hover:bg-white/20'}`}
-                >
-                  <Heart className={`w-4 h-4 ${activePhotoObj.hasLiked ? 'fill-white' : ''}`} />
-                  <span>{activePhotoObj.likesCount}</span>
-                </button>
+                <>
+                  <button
+                    onClick={() => handleToggleLike(activePhotoObj.id, activePhotoObj.hasLiked)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border transition-all shadow-xl ${activePhotoObj.hasLiked ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white/10 backdrop-blur-md border-white/10 text-white hover:bg-white/20'}`}
+                  >
+                    <Heart className={`w-4 h-4 ${activePhotoObj.hasLiked ? 'fill-white' : ''}`} />
+                    <span>{activePhotoObj.likesCount}</span>
+                  </button>
+                  
+                  {/* Contributor Badge */}
+                  <Link href={`/profile/${activePhotoObj.users?.username || ''}`} className="flex items-center gap-2 px-4 py-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-full shadow-xl hover:bg-black/60 transition-colors group">
+                    {activePhotoObj.users?.avatar_url ? (
+                      <img src={activePhotoObj.users.avatar_url} alt="Avatar" className="w-5 h-5 rounded-full object-cover border border-white/20" />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center border border-white/20">
+                        <Camera className="w-3 h-3 text-white/70" />
+                      </div>
+                    )}
+                    <span className="text-white/70 text-xs">Foto oleh</span>
+                    <span className="text-white font-bold text-sm group-hover:text-amber-400 transition-colors">
+                      {activePhotoObj.users?.username || 'Anonim'}
+                    </span>
+                  </Link>
+                </>
               )}
             </motion.div>
           </motion.div>
