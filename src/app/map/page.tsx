@@ -5,7 +5,7 @@ export default function MapPage() {
   return (
     <main className="min-h-screen bg-background overflow-hidden flex flex-col">
       <Navbar />
-      <div className="flex-1 relative">
+      <div className="flex-1 relative pt-[var(--nav-height)]">
         <Map />
       </div>
     </main>

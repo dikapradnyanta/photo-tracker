@@ -43,7 +43,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
       <Navbar />
 
       {/* ─────────── HERO: SPLIT WITH STACKED CARDS ─────────── */}
-      <section className="relative pt-40 pb-32 px-6 md:px-12 noise min-h-[90vh] flex flex-col justify-center border-b border-border">
+      <section className="relative pt-[calc(var(--nav-height)+48px)] pb-32 px-6 md:px-12 noise min-h-[90vh] flex flex-col justify-center border-b border-border">
         {/* Background blobs */}
         <div className="absolute inset-0 grid-pattern opacity-40 pointer-events-none -z-10" />
         

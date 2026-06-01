@@ -80,7 +80,7 @@ export default function SpotsPage() {
       <Navbar />
 
       {/* ── STICKY SEARCH + FILTER BAR (Google Maps style) ── */}
-      <div className="sticky top-16 z-[500] pt-4 pb-2 bg-background/80 backdrop-blur-lg border-b border-border/40">
+      <div className="sticky top-[80px] z-[500] pt-3 pb-2 bg-background/80 backdrop-blur-lg border-b border-border/40">
         <div className="max-w-6xl mx-auto px-6">
           
           {/* Search Row */}
@@ -237,7 +237,7 @@ export default function SpotsPage() {
       </div>
 
       {/* Page Title */}
-      <div className="max-w-6xl mx-auto px-6 pt-10 pb-8">
+      <div className="max-w-6xl mx-auto px-6 pt-8 pb-8">
         <h1 className="text-5xl font-display font-bold tracking-tight">
           Jelajahi<br /><span className="text-amber-primary italic">Spot Foto</span>
         </h1>

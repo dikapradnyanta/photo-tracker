@@ -127,10 +127,10 @@ export default function Map() {
     : spots
 
   return (
-    <div className="h-[calc(100vh-80px)] w-full flex flex-col relative overflow-hidden">
+    <div className="h-[calc(100vh-var(--nav-height))] w-full flex flex-col relative overflow-hidden">
 
       {/* ── SEARCH BAR (top-left, Google Maps style) ── */}
-      <div ref={searchRef} className="absolute top-5 left-4 right-4 md:left-6 md:right-auto md:w-[380px] z-[1000]">
+      <div ref={searchRef} className="absolute top-4 left-4 right-4 md:left-6 md:right-auto md:w-[380px] z-[1000]">
         {/* Input Row */}
         <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-300 shadow-2xl ${
           searchOpen
@@ -249,8 +249,8 @@ export default function Map() {
         </AnimatePresence>
       </div>
 
-      {/* ── GENRE FILTER PILLS (centered, below search) ── */}
-      <div className="absolute top-20 md:top-5 left-1/2 md:left-[420px] md:translate-x-0 -translate-x-1/2 z-[1000] w-[90%] md:w-auto overflow-hidden rounded-full shadow-xl border border-border glass bg-surface-alt/60">
+      {/* ── GENRE FILTER PILLS (centered, below search on mobile / beside search on desktop) ── */}
+      <div className="absolute top-[68px] md:top-4 left-1/2 md:left-[406px] md:translate-x-0 -translate-x-1/2 z-[1000] w-[90%] md:w-auto overflow-hidden rounded-full shadow-xl border border-border glass bg-surface-alt/60">
         <div className="flex gap-2 p-2 overflow-x-auto hide-scrollbar snap-x">
           {GENRES.map((g) => {
             const isActive = activeGenre === g || (activeGenre === null && g === 'Semua');
