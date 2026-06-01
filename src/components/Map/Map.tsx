@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Search, ArrowRight, Loader2, X, MapPin, Clock } from 'lucide-react'
+import { Search, ArrowRight, Loader2, X, MapPin, Clock, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
@@ -28,6 +28,7 @@ export default function Map() {
   const [selectedClusterSpots, setSelectedClusterSpots] = useState<SpotWithPhoto[]>([])
   const [bounds, setBounds] = useState<any>(null)
   const [activeGenre, setActiveGenre] = useState<string | null>(null)
+  const [filterOpen, setFilterOpen] = useState(false)
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -129,40 +130,67 @@ export default function Map() {
   return (
     <div className="h-[calc(100vh-var(--nav-height))] w-full flex flex-col relative overflow-hidden">
 
-      {/* ── SEARCH BAR (top-left, Google Maps style) ── */}
-      <div ref={searchRef} className="absolute top-4 left-4 right-4 md:left-6 md:right-auto md:w-[380px] z-[1000]">
-        {/* Input Row */}
-        <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-300 shadow-2xl ${
-          searchOpen
-            ? 'bg-background/98 backdrop-blur-2xl border-amber-primary/50 shadow-amber-primary/10'
-            : 'glass border-border/60 backdrop-blur-xl'
-        }`}>
-          {searchLoading
-            ? <Loader2 className="w-4 h-4 text-amber-primary animate-spin shrink-0" />
-            : <Search className={`w-4 h-4 shrink-0 transition-colors ${searchOpen ? 'text-amber-primary' : 'text-muted'}`} />}
-          <input
-            ref={searchInputRef}
-            type="text"
-            value={searchQuery}
-            onChange={e => handleSearch(e.target.value)}
-            onFocus={() => setSearchOpen(true)}
-            placeholder="Cari nama spot foto..."
-            className="flex-1 bg-transparent text-sm font-medium text-foreground placeholder:text-muted/60 focus:outline-none"
-          />
-          <AnimatePresence>
-            {searchQuery && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.7 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.7 }}
-                transition={{ duration: 0.15 }}
-                onClick={() => { setSearchQuery(''); setSearchResults([]); searchInputRef.current?.focus() }}
-                className="w-5 h-5 rounded-full bg-muted/30 flex items-center justify-center hover:bg-muted/50 transition-colors shrink-0"
-              >
-                <X className="w-3 h-3" />
-              </motion.button>
+      {/* ── SEARCH BAR & FILTER (top-left, Google Maps style) ── */}
+      <div ref={searchRef} className="absolute top-4 left-4 right-4 md:left-6 md:right-auto md:w-[440px] z-[1000]">
+        
+        {/* Top Row: Search Input + Filter Toggle */}
+        <div className="flex items-start gap-2">
+          {/* Search Input */}
+          <div className={`flex-1 flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-300 shadow-2xl ${
+            searchOpen
+              ? 'bg-background/98 backdrop-blur-2xl border-amber-primary/50 shadow-amber-primary/10'
+              : 'glass border-border/60 backdrop-blur-xl'
+          }`}>
+            {searchLoading
+              ? <Loader2 className="w-4 h-4 text-amber-primary animate-spin shrink-0" />
+              : <Search className={`w-4 h-4 shrink-0 transition-colors ${searchOpen ? 'text-amber-primary' : 'text-muted'}`} />}
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={e => handleSearch(e.target.value)}
+              onFocus={() => setSearchOpen(true)}
+              placeholder="Cari nama spot foto..."
+              className="flex-1 min-w-0 bg-transparent text-sm font-medium text-foreground placeholder:text-muted/60 focus:outline-none"
+            />
+            <AnimatePresence>
+              {searchQuery && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  transition={{ duration: 0.15 }}
+                  onClick={() => { setSearchQuery(''); setSearchResults([]); searchInputRef.current?.focus() }}
+                  className="w-5 h-5 rounded-full bg-muted/30 flex items-center justify-center hover:bg-muted/50 transition-colors shrink-0"
+                >
+                  <X className="w-3 h-3" />
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Filter Toggle Button */}
+          <button
+            onClick={() => {
+              setFilterOpen(prev => !prev)
+              setSearchOpen(false)
+            }}
+            className={`relative flex items-center justify-center w-12 h-12 rounded-2xl border transition-all duration-300 shadow-2xl shrink-0 ${
+              filterOpen || activeGenre
+                ? 'bg-amber-primary border-amber-primary text-white shadow-amber-primary/20'
+                : 'glass border-border/60 backdrop-blur-xl text-muted hover:text-foreground'
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            {/* Active dot indicator */}
+            {activeGenre && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-white border border-amber-primary shadow-sm"
+              />
             )}
-          </AnimatePresence>
+          </button>
         </div>
 
         {/* Dropdown Results */}
@@ -249,26 +277,41 @@ export default function Map() {
         </AnimatePresence>
       </div>
 
-      {/* ── GENRE FILTER PILLS (centered, below search on mobile / beside search on desktop) ── */}
-      <div className="absolute top-[68px] md:top-4 left-1/2 md:left-[406px] md:translate-x-0 -translate-x-1/2 z-[1000] w-[90%] md:w-auto overflow-hidden rounded-full shadow-xl border border-border glass bg-surface-alt/60">
-        <div className="flex gap-2 p-2 overflow-x-auto hide-scrollbar snap-x">
-          {GENRES.map((g) => {
-            const isActive = activeGenre === g || (activeGenre === null && g === 'Semua');
-            return (
-              <button
-                key={g}
-                onClick={() => setActiveGenre(g === 'Semua' ? null : g)}
-                className={`snap-center shrink-0 px-5 py-2 rounded-full text-xs font-mono font-bold uppercase transition-all whitespace-nowrap ${
-                  isActive
-                    ? 'bg-amber-primary text-white border border-amber-primary shadow-lg shadow-amber-primary/20'
-                    : 'bg-surface/80 text-muted border border-border hover:border-amber-primary/40 hover:text-foreground'
-                }`}
-              >
-                {g}
-              </button>
-            )
-          })}
-        </div>
+      {/* ── EXPANDABLE GENRE FILTER PILLS ── */}
+      <div className="absolute top-[76px] left-4 right-4 md:left-6 md:right-auto md:w-[440px] z-[999]">
+        <AnimatePresence>
+          {filterOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scaleY: 0.95 }}
+              animate={{ opacity: 1, y: 0, scaleY: 1 }}
+              exit={{ opacity: 0, y: -10, scaleY: 0.95 }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="origin-top"
+            >
+              <div className="glass bg-surface-alt/80 border border-border/60 rounded-2xl shadow-xl p-3 flex flex-wrap gap-2">
+                {GENRES.map((g) => {
+                  const isActive = activeGenre === g || (activeGenre === null && g === 'Semua');
+                  return (
+                    <button
+                      key={g}
+                      onClick={() => {
+                        setActiveGenre(g === 'Semua' ? null : g)
+                        // Optional: setFilterOpen(false) jika ingin auto-close setelah klik
+                      }}
+                      className={`px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase transition-all ${
+                        isActive
+                          ? 'bg-amber-primary text-white border-transparent shadow-md shadow-amber-primary/20'
+                          : 'bg-background/50 text-muted border border-border/50 hover:border-amber-primary/40 hover:text-foreground'
+                      }`}
+                    >
+                      {g}
+                    </button>
+                  )
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Map Container */}
