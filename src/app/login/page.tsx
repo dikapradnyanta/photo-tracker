@@ -73,7 +73,8 @@ export default function LoginPage() {
           options: {
             data: {
               username: email.split('@')[0],
-            }
+            },
+            emailRedirectTo: `${window.location.origin}/login`,
           }
         })
         if (error) {
