@@ -23,6 +23,20 @@ function CrosshairMap({ onLocationChange }: { onLocationChange: (pos: [number, n
   return null
 }
 
+function MapUpdater({ latitude, longitude }: { latitude: number, longitude: number }) {
+  const map = useMap()
+  useEffect(() => {
+    const center = map.getCenter()
+    const dist = map.distance(center, [latitude, longitude])
+    // Geser peta jika perubahan lokasi lebih dari 5 meter 
+    // (untuk menghindari infinite loop saat user menggeser peta secara manual)
+    if (dist > 5) {
+      map.flyTo([latitude, longitude], 15, { animate: true, duration: 1 })
+    }
+  }, [latitude, longitude, map])
+  return null
+}
+
 interface MiniMapProps {
   latitude: number
   longitude: number
@@ -40,6 +54,7 @@ export default function MiniMap({ latitude, longitude, onLocationChange }: MiniM
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <CrosshairMap onLocationChange={onLocationChange} />
+        <MapUpdater latitude={latitude} longitude={longitude} />
       </MapContainer>
 
       {/* Crosshair pin overlay — always centered over the map */}
