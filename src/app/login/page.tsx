@@ -125,6 +125,21 @@ export default function LoginPage() {
     }
   }
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Masukkan email-mu dulu sebelum reset password.')
+      return
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login`,
+    })
+    if (error) {
+      setError('Gagal mengirim email reset. Periksa alamat email-mu.')
+    } else {
+      setSuccess('Email reset password sudah dikirim! Cek kotak masukmu.')
+    }
+  }
+
   return (
     <main className="min-h-screen bg-background text-foreground flex relative overflow-hidden">
       {/* Left Panel — Decorative */}
@@ -217,7 +232,7 @@ export default function LoginPage() {
                 <div className="flex justify-between items-end px-1">
                   <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted">Password</label>
                   {!isSignUp && (
-                    <button type="button" className="text-[10px] font-bold text-amber-primary uppercase tracking-wider hover:underline">Lupa?</button>
+                    <button type="button" onClick={handleForgotPassword} className="text-[10px] font-bold text-amber-primary uppercase tracking-wider hover:underline">Lupa?</button>
                   )}
                 </div>
                 <div className="relative group">

@@ -399,8 +399,8 @@ export default function ProfilePage() {
             <div className="col-span-full py-32 text-center border-y border-border">
               <Camera className="w-12 h-12 mx-auto mb-6 text-muted/30" />
               <p className="text-muted font-serif text-2xl italic">"Mulai Hunting Pertamamu"</p>
-              <Link href="/map" className="inline-block mt-8 px-8 py-4 bg-foreground text-background rounded-none text-xs font-mono uppercase tracking-[0.2em] font-bold hover:bg-amber-primary hover:text-white transition-all">
-                Buka Peta Eksplorasi
+              <Link href="/add-spot" className="inline-block mt-8 px-8 py-4 bg-foreground text-background rounded-none text-xs font-mono uppercase tracking-[0.2em] font-bold hover:bg-amber-primary hover:text-white transition-all">
+                Tambah Spot Pertamamu
               </Link>
             </div>
           )}

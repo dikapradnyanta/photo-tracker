@@ -113,10 +113,20 @@ export default function OnboardingPage() {
 
       // 3. Upload First Photo if exists (Optional)
       if (firstPhotoFile) {
-        // Here we could create a "First Spot" or just upload to gallery
-        // For simplicity, let's just upload it and maybe skip spot creation for now
-        // or redirect to add-spot with this photo.
-        // The user said "foto pertama kali", let's just upload it.
+        const fileExt = firstPhotoFile.name.split('.').pop()
+        const fileName = `first-photo-${user.id}-${Date.now()}.${fileExt}`
+        const filePath = `first-photos/${fileName}`
+
+        const { error: photoUploadError } = await supabase.storage
+          .from('photos')
+          .upload(filePath, firstPhotoFile)
+
+        if (!photoUploadError) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('photos').getPublicUrl(filePath)
+          
+          await supabase.from('users').update({ first_photo_url: publicUrl }).eq('id', user.id)
+        }
       }
 
       router.push('/map')

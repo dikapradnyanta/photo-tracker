@@ -9,7 +9,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence, Variants } from 'framer-motion'
 import {
   ArrowLeft, MapPin, Clock, Zap, Star, Camera, Loader2,
-  Heart, MessageSquare, Navigation, Send, ChevronLeft, ChevronRight
+  Heart, MessageSquare, Navigation, Send, ChevronLeft, ChevronRight, Check
 } from 'lucide-react'
 import { Database } from '@/types/database'
 
@@ -62,6 +62,7 @@ export default function SpotDetailPage() {
   const [loading, setLoading] = useState(true)
   const [avgRating, setAvgRating] = useState(0)
   const [currentUser, setCurrentUser] = useState<any>(null)
+  const [hasReviewed, setHasReviewed] = useState(false)
   const [topSpots, setTopSpots] = useState<any[]>([])
 
   // Active photo index (0 = best photo)
@@ -129,6 +130,10 @@ export default function SpotDetailPage() {
         if (fetchedReviews.length > 0) {
           const sum = fetchedReviews.reduce((acc, r) => acc + (r.rating || 0), 0)
           setAvgRating(Math.round((sum / fetchedReviews.length) * 10) / 10)
+        }
+
+        if (user) {
+          setHasReviewed(fetchedReviews.some(r => r.user_id === user.id))
         }
 
         // Fetch other top spots
@@ -411,6 +416,16 @@ export default function SpotDetailPage() {
             </p>
           </article>
 
+          {spot.tips_trik && (
+            <div className="p-6 bg-surface-alt rounded-[24px] border border-border">
+              <div className="flex items-center gap-3 mb-3">
+                <Zap className="w-5 h-5 text-amber-primary" />
+                <h3 className="font-display font-bold text-xl">Tips & Trik</h3>
+              </div>
+              <p className="text-foreground/80 leading-relaxed">{spot.tips_trik}</p>
+            </div>
+          )}
+
           {/* Carousel Spot Terpopuler */}
           {topSpots.length > 0 && (
             <div className="pt-12 border-t border-border">
@@ -495,43 +510,50 @@ export default function SpotDetailPage() {
             </div>
 
             {currentUser ? (
-              <div className="p-6 rounded-[24px] bg-surface border border-border shadow-lg">
-                <p className="text-sm font-bold mb-4">Bagaimana pengalamanmu?</p>
-                {/* Touch-target wrappers for stars */}
-                <div className="flex gap-2 mb-6">
-                  {[1,2,3,4,5].map(n => (
-                    <button
-                      key={n}
-                      onClick={() => setReviewRating(n)}
-                      onMouseEnter={() => setReviewHover(n)}
-                      onMouseLeave={() => setReviewHover(0)}
-                      className="p-1 -m-1 focus:outline-none transition-transform hover:scale-110"
-                    >
-                      <Star
-                        className={`w-10 h-10 md:w-8 md:h-8 transition-colors ${
-                          n <= (reviewHover || reviewRating)
-                            ? 'fill-amber-primary text-amber-primary drop-shadow-[0_0_8px_rgba(232,105,42,0.4)]'
-                            : 'text-muted/20'
-                        }`}
-                      />
-                    </button>
-                  ))}
+              hasReviewed ? (
+                <div className="p-6 rounded-[24px] bg-surface-alt border border-border text-center">
+                  <Check className="w-8 h-8 text-amber-primary mx-auto mb-3" />
+                  <p className="font-bold text-sm">Kamu sudah pernah memberikan ulasan untuk spot ini.</p>
                 </div>
-                <textarea
-                  className="w-full bg-background border border-border py-3 px-4 rounded-xl text-sm min-h-[100px] mb-4 resize-none focus:border-amber-primary/50 focus:ring-1 focus:ring-amber-primary/50 outline-none transition-all"
-                  placeholder="Ceritakan detail akses, cuaca, atau angle terbaikmu..."
-                  value={reviewComment}
-                  onChange={e => setReviewComment(e.target.value)}
-                />
-                <button
-                  onClick={handleSubmitReview}
-                  disabled={reviewRating === 0 || submittingReview}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-foreground text-background rounded-xl font-bold hover:opacity-90 transition-all disabled:opacity-40"
-                >
-                  {submittingReview ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
-                  Kirim Ulasan
-                </button>
-              </div>
+              ) : (
+                <div className="p-6 rounded-[24px] bg-surface border border-border shadow-lg">
+                  <p className="text-sm font-bold mb-4">Bagaimana pengalamanmu?</p>
+                  {/* Touch-target wrappers for stars */}
+                  <div className="flex gap-2 mb-6">
+                    {[1,2,3,4,5].map(n => (
+                      <button
+                        key={n}
+                        onClick={() => setReviewRating(n)}
+                        onMouseEnter={() => setReviewHover(n)}
+                        onMouseLeave={() => setReviewHover(0)}
+                        className="p-1 -m-1 focus:outline-none transition-transform hover:scale-110"
+                      >
+                        <Star
+                          className={`w-10 h-10 md:w-8 md:h-8 transition-colors ${
+                            n <= (reviewHover || reviewRating)
+                              ? 'fill-amber-primary text-amber-primary drop-shadow-[0_0_8px_rgba(232,105,42,0.4)]'
+                              : 'text-muted/20'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    className="w-full bg-background border border-border py-3 px-4 rounded-xl text-sm min-h-[100px] mb-4 resize-none focus:border-amber-primary/50 focus:ring-1 focus:ring-amber-primary/50 outline-none transition-all"
+                    placeholder="Ceritakan detail akses, cuaca, atau angle terbaikmu..."
+                    value={reviewComment}
+                    onChange={e => setReviewComment(e.target.value)}
+                  />
+                  <button
+                    onClick={handleSubmitReview}
+                    disabled={reviewRating === 0 || submittingReview}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-foreground text-background rounded-xl font-bold hover:opacity-90 transition-all disabled:opacity-40"
+                  >
+                    {submittingReview ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
+                    Kirim Ulasan
+                  </button>
+                </div>
+              )
             ) : (
               <div className="p-8 text-center rounded-[24px] bg-amber-primary/5 border border-amber-primary/20">
                 <Star className="w-8 h-8 text-amber-primary mx-auto mb-4" />

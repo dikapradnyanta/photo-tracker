@@ -150,7 +150,7 @@ export default function Map() {
               value={searchQuery}
               onChange={e => handleSearch(e.target.value)}
               onFocus={() => setSearchOpen(true)}
-              placeholder="Cari nama spot foto..."
+              placeholder="Cari spot di area ini..."
               className="flex-1 min-w-0 bg-transparent text-sm font-medium text-foreground placeholder:text-muted/60 focus:outline-none"
             />
             <AnimatePresence>
@@ -168,6 +168,11 @@ export default function Map() {
               )}
             </AnimatePresence>
           </div>
+          {searchOpen && (
+            <p className="text-[10px] text-muted/60 mt-1 ml-1 absolute -bottom-5 left-0">
+              Pencarian hanya mencakup spot yang terlihat di peta saat ini.
+            </p>
+          )}
 
           {/* Filter Toggle Button */}
           <button

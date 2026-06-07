@@ -46,6 +46,10 @@ export default function AddSpotPage() {
   const [showDetail, setShowDetail] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [existingSpot, setExistingSpot] = useState<any>(null)
+  const [showMergeDialog, setShowMergeDialog] = useState(false)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState<string | null>(null)
   const router = useRouter()
 
   // ── Hitung SHA-256 fingerprint dari konten file ──────────────────────────
@@ -118,6 +122,57 @@ export default function AddSpotPage() {
     setPhotoPreview(URL.createObjectURL(file))
   }
 
+  const handleConfirmMerge = async () => {
+    if (!existingSpot || !uploadedPhotoUrl || !user) return
+    try {
+      setLoading(true)
+      await supabase.from('spot_photos').insert({
+        spot_id: existingSpot.id,
+        user_id: user.id,
+        photo_url: uploadedPhotoUrl,
+        caption: 'Added Photo',
+      })
+      if (photoHash) saveUploadedHash(user.id, photoHash)
+      setShowMergeDialog(false)
+      setSuccessMsg('Foto berhasil ditambahkan ke spot yang ada! 🎉')
+      setTimeout(() => router.push('/map'), 2000)
+    } catch (err) {
+      setUploadError('Gagal menambah foto ke spot tersebut.')
+    } finally { setLoading(false) }
+  }
+
+  const handleCreateNew = async () => {
+    if (!uploadedPhotoUrl || !user) return
+    try {
+      setLoading(true)
+      const { data: spotData, error: spotError } = await supabase.from('spots').insert({
+        name: formData.name.trim(),
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        genre: [formData.genre],
+        description: detailData.description,
+        tips_trik: detailData.tips_trik,
+        best_time: detailData.best_time,
+        difficulty: detailData.difficulty,
+        added_by: user.id,
+      }).select().single()
+      if (spotError) throw spotError
+
+      await supabase.from('spot_photos').insert({
+        spot_id: spotData.id,
+        user_id: user.id,
+        photo_url: uploadedPhotoUrl,
+        caption: 'Added Photo',
+      })
+      if (photoHash) saveUploadedHash(user.id, photoHash)
+      setShowMergeDialog(false)
+      setSuccessMsg('Spot baru berhasil dipublikasikan! 🎉')
+      setTimeout(() => router.push('/map'), 2000)
+    } catch (err) {
+      setUploadError('Gagal membuat spot baru.')
+    } finally { setLoading(false) }
+  }
+
   const handleGetCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
@@ -159,15 +214,15 @@ export default function AddSpotPage() {
         .from('photos')
         .getPublicUrl(filePath)
 
+      setUploadedPhotoUrl(publicUrl)
+
       // 2. Check if a spot with the same name exists nearby (e.g., within 2km)
       const { data: existingSpots, error: existingError } = await supabase
         .from('spots')
-        .select('id, latitude, longitude')
+        .select('id, name, latitude, longitude')
         .ilike('name', formData.name.trim());
       
       if (existingError) throw existingError;
-
-      let spotId = null;
 
       if (existingSpots && existingSpots.length > 0) {
         const R = 6371; // Earth's radius in km
@@ -185,44 +240,42 @@ export default function AddSpotPage() {
           const distance = R * c;
 
           if (distance <= maxDistKm) {
-            spotId = spot.id;
-            break; // Found a matching nearby spot
+            setExistingSpot(spot)
+            setShowMergeDialog(true)
+            setLoading(false)
+            return // Hentikan eksekusi, tunggu pilihan user
           }
         }
       }
 
-      if (!spotId) {
-        // 3a. Insert new Spot if not found nearby
-        const { data: spotData, error: spotError } = await supabase.from('spots').insert({
-          name: formData.name.trim(),
-          latitude: formData.latitude,
-          longitude: formData.longitude,
-          genre: [formData.genre],
-          description: detailData.description,
-          tips_trik: detailData.tips_trik,
-          best_time: detailData.best_time,
-          difficulty: detailData.difficulty,
-          added_by: user.id,
-        }).select().single()
+      // Jika tidak ada spot serupa, langsung buat spot baru
+      const { data: spotData, error: spotError } = await supabase.from('spots').insert({
+        name: formData.name.trim(),
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        genre: [formData.genre],
+        description: detailData.description,
+        tips_trik: detailData.tips_trik,
+        best_time: detailData.best_time,
+        difficulty: detailData.difficulty,
+        added_by: user.id,
+      }).select().single()
 
-        if (spotError) throw spotError
-        spotId = spotData.id;
-      }
+      if (spotError) throw spotError
 
-      // 3b. Insert photo for the spot (either new or existing)
       await supabase.from('spot_photos').insert({
-        spot_id: spotId,
+        spot_id: spotData.id,
         user_id: user.id,
         photo_url: publicUrl,
         caption: 'Added Photo',
       })
 
-      // Simpan hash setelah upload berhasil agar deteksi duplikat aktif
       if (photoHash && user?.id) {
         saveUploadedHash(user.id, photoHash)
       }
 
-      router.push('/map')
+      setSuccessMsg('Spot berhasil dipublikasikan! 🎉')
+      setTimeout(() => router.push('/map'), 2000)
     } catch (error: any) {
       console.error('Error adding spot:', error)
       const msg = error?.message?.toLowerCase() || ''
@@ -511,6 +564,45 @@ export default function AddSpotPage() {
 
         </form>
       </div>
+
+      {successMsg && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[5000] px-8 py-4 bg-foreground text-background rounded-2xl font-bold shadow-2xl"
+        >
+          {successMsg}
+        </motion.div>
+      )}
+
+      <AnimatePresence>
+        {showMergeDialog && (
+          <div className="fixed inset-0 z-[6000] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-background rounded-[24px] border border-border p-8 max-w-md w-full shadow-2xl"
+            >
+              <h3 className="font-display font-bold text-2xl mb-2">Spot Serupa Ditemukan</h3>
+              <p className="text-muted mb-6">
+                Spot <strong>&quot;{existingSpot?.name}&quot;</strong> sudah ada dalam radius dekat. 
+                Mau tambahkan fotomu ke spot ini, atau buat spot baru?
+              </p>
+              <div className="flex flex-col gap-3">
+                <button onClick={handleConfirmMerge} disabled={loading}
+                  className="w-full py-4 bg-amber-primary text-white rounded-2xl font-bold hover:shadow-lg disabled:opacity-50">
+                  {loading ? 'Menyimpan...' : 'Tambah foto ke spot yang ada'}
+                </button>
+                <button onClick={handleCreateNew} disabled={loading}
+                  className="w-full py-4 border border-border rounded-2xl font-bold text-muted hover:text-foreground disabled:opacity-50 hover:bg-surface-alt transition-colors">
+                  Buat spot baru
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   )
 }

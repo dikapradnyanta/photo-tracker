@@ -354,6 +354,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
             <ul className="space-y-4 text-sm text-muted font-medium">
               <li><Link href="/" className="hover:text-amber-primary transition-colors">Beranda</Link></li>
               <li><Link href="/map" className="hover:text-amber-primary transition-colors">Peta Interaktif</Link></li>
+              <li><Link href="/spots" className="hover:text-amber-primary transition-colors">Jelajahi Spot</Link></li>
               <li><Link href="/add-spot" className="hover:text-amber-primary transition-colors">Tambah Spot</Link></li>
               <li><Link href="/community" className="hover:text-amber-primary transition-colors">Komunitas</Link></li>
             </ul>
