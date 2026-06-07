@@ -87,8 +87,7 @@ export default function OnboardingPage() {
     setLoading(true)
 
     try {
-      let avatar_url = null
-      let first_photo_url = null
+      let final_avatar_url = null
 
       // 1. Upload Avatar if exists
       if (avatarFile) {
@@ -104,40 +103,38 @@ export default function OnboardingPage() {
           const { data: { publicUrl } } = supabase.storage
             .from('photos')
             .getPublicUrl(filePath)
-          avatar_url = publicUrl
+          final_avatar_url = publicUrl
         }
       }
 
-      // 2. Update User Profile
+      // 2. Update User Profile Safely
+      const payload: any = {
+        username: formData.username,
+        full_name: formData.full_name,
+        onboarding_completed: true
+      }
+      
+      if (formData.gear && formData.gear.trim() !== '') {
+        payload.gear = formData.gear
+      }
+      if (final_avatar_url) {
+        payload.avatar_url = final_avatar_url
+      }
+
       const { error: updateError } = await supabase
         .from('users')
-        .update({
-          username: formData.username,
-          full_name: formData.full_name,
-          gear: formData.gear,
-          avatar_url: avatar_url || undefined,
-          onboarding_completed: true
-        })
+        .update(payload)
         .eq('id', user.id)
 
       if (updateError) throw updateError
 
-      // 3. Upload First Photo if exists (Optional)
+      // 3. Upload First Photo (Optional)
       if (firstPhotoFile) {
         const fileExt = firstPhotoFile.name.split('.').pop()
         const fileName = `first-photo-${user.id}-${Date.now()}.${fileExt}`
         const filePath = `first-photos/${fileName}`
 
-        const { error: photoUploadError } = await supabase.storage
-          .from('photos')
-          .upload(filePath, firstPhotoFile)
-
-        if (!photoUploadError) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('photos').getPublicUrl(filePath)
-          
-          await supabase.from('users').update({ first_photo_url: publicUrl }).eq('id', user.id)
-        }
+        await supabase.storage.from('photos').upload(filePath, firstPhotoFile)
       }
 
       router.push('/map')
@@ -146,11 +143,11 @@ export default function OnboardingPage() {
       const msg = error?.message?.toLowerCase() || ''
       if (msg.includes('unique') || msg.includes('duplicate')) {
         setErrorMsg('Username ini sudah dipakai oleh orang lain. Silakan pilih username yang berbeda.')
-        setStep(1) // Kembalikan ke step 1 agar bisa langsung ganti username
+        setStep(1)
       } else if (msg.includes('storage') || msg.includes('upload')) {
         setErrorMsg('Gagal mengunggah foto. Periksa koneksi internetmu.')
       } else {
-        setErrorMsg('Terjadi masalah saat menyimpan profil. Coba lagi.')
+        setErrorMsg(`Terjadi masalah: ${error?.message || 'Gagal menyimpan profil'}`)
       }
     } finally {
       setLoading(false)
