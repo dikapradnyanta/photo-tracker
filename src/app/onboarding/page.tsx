@@ -34,10 +34,21 @@ export default function OnboardingPage() {
   const router = useRouter()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) {
         router.push('/login')
       } else {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('onboarding_completed')
+          .eq('id', session.user.id)
+          .single()
+          
+        if (profile?.onboarding_completed) {
+          router.push('/map')
+          return
+        }
+
         setUser(session.user)
         // Set initial values from session if available
         setFormData(prev => ({

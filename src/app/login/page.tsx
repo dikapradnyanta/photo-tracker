@@ -74,7 +74,7 @@ export default function LoginPage() {
             data: {
               username: email.split('@')[0],
             },
-            emailRedirectTo: `${window.location.origin}/login`,
+            emailRedirectTo: `${window.location.origin}/onboarding`,
           }
         })
         if (error) {
@@ -131,7 +131,7 @@ export default function LoginPage() {
       return
     }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/login`,
+      redirectTo: `${window.location.origin}/profile`,
     })
     if (error) {
       setError('Gagal mengirim email reset. Periksa alamat email-mu.')
