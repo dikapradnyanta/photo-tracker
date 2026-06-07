@@ -15,9 +15,11 @@ import {
   HardDrive
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { AlertCircle } from 'lucide-react'
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [formData, setFormData] = useState({
@@ -47,8 +49,14 @@ export default function OnboardingPage() {
     })
   }, [router])
 
-  const handleNext = () => setStep(s => s + 1)
-  const handleBack = () => setStep(s => s - 1)
+  const handleNext = () => {
+    setErrorMsg(null)
+    setStep(s => s + 1)
+  }
+  const handleBack = () => {
+    setErrorMsg(null)
+    setStep(s => s - 1)
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'firstPhoto') => {
     if (e.target.files && e.target.files[0]) {
@@ -112,9 +120,17 @@ export default function OnboardingPage() {
       }
 
       router.push('/map')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error completing onboarding:', error)
-      alert('Gagal menyimpan profil. Pastikan username belum digunakan.')
+      const msg = error?.message?.toLowerCase() || ''
+      if (msg.includes('unique') || msg.includes('duplicate')) {
+        setErrorMsg('Username ini sudah dipakai oleh orang lain. Silakan pilih username yang berbeda.')
+        setStep(1) // Kembalikan ke step 1 agar bisa langsung ganti username
+      } else if (msg.includes('storage') || msg.includes('upload')) {
+        setErrorMsg('Gagal mengunggah foto. Periksa koneksi internetmu.')
+      } else {
+        setErrorMsg('Terjadi masalah saat menyimpan profil. Coba lagi.')
+      }
     } finally {
       setLoading(false)
     }
@@ -285,6 +301,21 @@ export default function OnboardingPage() {
                   </button>
                 )}
               </div>
+
+              {/* Error Message UI */}
+              <AnimatePresence>
+                {errorMsg && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="flex items-start gap-3 p-4 mt-6 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400"
+                  >
+                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                    <p className="text-sm font-medium leading-snug">{errorMsg}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           </AnimatePresence>
         </div>
