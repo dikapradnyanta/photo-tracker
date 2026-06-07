@@ -17,7 +17,9 @@ import {
   Save,
   Mail,
   PenTool,
-  Info
+  Info,
+  Share2,
+  Check
 } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -47,6 +49,7 @@ export default function ProfilePage() {
   const [genres, setGenres] = useState<string[]>(['Semua'])
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
   
   const scrollRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -54,6 +57,28 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchData()
   }, [router])
+
+  const handleShare = async () => {
+    const url = window.location.href
+    const shareData = {
+      title: `${profile?.full_name || profile?.username} — PhotoTracker`,
+      text: `Lihat profil fotografer ini di PhotoTracker`,
+      url,
+    }
+
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      try {
+        await navigator.share(shareData)
+      } catch (err) {}
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    } catch {}
+  }
 
   const fetchData = async () => {
     try {
@@ -271,13 +296,36 @@ export default function ProfilePage() {
             <button className="p-2 bg-surface-alt border border-border rounded-lg text-muted"><ImageIcon className="w-4 h-4" /></button>
           </div>
           
-          <button 
-            onClick={() => setIsEditing(true)}
-            className="px-6 py-2 bg-surface-alt border border-border rounded-xl text-xs font-bold flex items-center gap-2 hover:border-amber-primary transition-all"
-          >
-            <Settings className="w-3.5 h-3.5" />
-            Edit Profil
-          </button>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={handleShare}
+              className="px-4 md:px-6 py-2 bg-surface-alt border border-border rounded-xl text-xs font-bold flex items-center gap-2 hover:border-amber-primary/40 transition-all"
+            >
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={copied ? 'copied' : 'share'}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex items-center gap-2"
+                >
+                  {copied ? (
+                    <><Check className="w-3.5 h-3.5 text-emerald-500" /> <span className="text-emerald-500">Tautan Disalin!</span></>
+                  ) : (
+                    <><Share2 className="w-3.5 h-3.5" /> <span className="hidden md:inline">Bagikan Profil</span><span className="md:hidden">Bagikan</span></>
+                  )}
+                </motion.span>
+              </AnimatePresence>
+            </button>
+            <button 
+              onClick={() => setIsEditing(true)}
+              className="px-4 md:px-6 py-2 bg-surface-alt border border-border rounded-xl text-xs font-bold flex items-center gap-2 hover:border-amber-primary transition-all"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Edit Profil</span><span className="md:hidden">Edit</span>
+            </button>
+          </div>
         </div>
 
         {/* Chips */}

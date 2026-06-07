@@ -30,8 +30,13 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files — NEVER commit API keys!
+.env
 .env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # vercel
 .vercel
@@ -40,6 +45,21 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# ide
+# ide / tools
 .skills-temp/
-seed-photos.js  
+.vscode/
+.idea/
+
+# supabase local dev — jangan di-push ke repo publik
+supabase/.branches/
+supabase/.temp/
+supabase/migrations/
+supabase/seed.sql
+
+# script helpers (tidak perlu di repo)
+seed-photos.js
+seed-community.js
+create_rpc.sql
+supabase_*.sql
+status.txt
+fix-colors.js

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { PlusCircle, Menu, X, Home, Map as MapIcon, User } from 'lucide-react'
+import { PlusCircle, Menu, X, Home, Map as MapIcon, User, Users } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { ThemeToggle } from './ThemeToggle'
@@ -44,6 +44,7 @@ export default function Navbar() {
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
     { name: 'Peta Spot', path: '/map', icon: MapIcon },
+    { name: 'Komunitas', path: '/community', icon: Users },
     { name: 'Profil', path: '/profile', icon: User },
   ]
 

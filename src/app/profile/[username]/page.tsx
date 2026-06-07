@@ -14,9 +14,12 @@ import {
   Award,
   Loader2,
   Zap,
-  Grid
+  Grid,
+  Share2,
+  Check
 } from 'lucide-react'
 import { Database } from '@/types/database'
+import { AnimatePresence } from 'framer-motion'
 
 type Profile = Database['public']['Tables']['users']['Row']
 type Spot = Database['public']['Tables']['spots']['Row']
@@ -33,11 +36,34 @@ export default function PublicProfilePage() {
   const [photos, setPhotos] = useState<SpotPhoto[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!username) return
     fetchProfile()
   }, [username])
+
+  const handleShare = async () => {
+    const url = window.location.href
+    const shareData = {
+      title: `${profile?.full_name || profile?.username} — PhotoTracker`,
+      text: `Lihat profil fotografer ini di PhotoTracker`,
+      url,
+    }
+
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      try {
+        await navigator.share(shareData)
+      } catch (err) {}
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    } catch {}
+  }
 
   const fetchProfile = async () => {
     try {
@@ -136,6 +162,25 @@ export default function PublicProfilePage() {
                 <span className="px-2.5 py-0.5 bg-amber-primary/10 border border-amber-primary/20 text-amber-primary text-[9px] font-mono font-bold rounded-full uppercase tracking-widest">
                   {userLevel}
                 </span>
+
+                <button onClick={handleShare} className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-alt border border-border rounded-full text-[10px] font-bold hover:border-amber-primary/40 transition-all">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={copied ? 'copied' : 'share'}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.15 }}
+                      className="flex items-center gap-1.5"
+                    >
+                      {copied ? (
+                        <><Check className="w-3 h-3 text-emerald-500" /> <span className="text-emerald-500">Tautan Disalin!</span></>
+                      ) : (
+                        <><Share2 className="w-3 h-3" /> Bagikan</>
+                      )}
+                    </motion.span>
+                  </AnimatePresence>
+                </button>
               </div>
               <p className="text-xs font-mono text-muted">@{profile.username}</p>
               {profile.location && (
