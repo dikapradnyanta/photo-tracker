@@ -192,6 +192,12 @@ export default function CommunityPage() {
               <Loader2 className="w-8 h-8 animate-spin text-amber-primary" />
               <p className="text-sm font-mono text-muted tracking-widest uppercase">Memuat komunitas...</p>
             </div>
+          ) : contributors.length === 0 ? (
+            <div className="text-center py-24">
+              <Users className="w-16 h-16 mx-auto mb-6 opacity-10" />
+              <p className="font-bold text-xl mb-2">Belum Ada Kontributor</p>
+              <p className="text-muted text-sm">Jadilah yang pertama menambahkan spot foto!</p>
+            </div>
           ) : (
             <div className="flex flex-col gap-3">
               {filtered.map(contributor => {

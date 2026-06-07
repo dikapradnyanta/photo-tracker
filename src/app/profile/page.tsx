@@ -137,8 +137,15 @@ export default function ProfilePage() {
 
   const handleSaveSettings = async () => {
     if (!profile) return
-    setSaving(true)
 
+    // Validasi username tidak boleh kosong
+    if (!editData.username?.trim()) {
+      alert('Username tidak boleh kosong.')
+      return
+    }
+
+
+    setSaving(true)
     try {
       let avatar_url = profile.avatar_url
 

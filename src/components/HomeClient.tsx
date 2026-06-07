@@ -156,7 +156,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
                 <div className="absolute bottom-0 left-0 p-6 w-full text-white">
                   <h3 className="text-2xl font-display font-bold mb-1 group-hover:text-amber-400 transition-colors line-clamp-1">{topSpots[1].name}</h3>
                   <div className="flex items-center gap-1.5 text-xs text-white/70">
-                    <MapPin className="w-3.5 h-3.5" /> {topSpots[1].latitude.toFixed(3)}, {topSpots[1].longitude.toFixed(3)}
+                    <MapPin className="w-3.5 h-3.5" /> {topSpots[1].latitude?.toFixed(3) ?? '–'}, {topSpots[1].longitude?.toFixed(3) ?? '–'}
                   </div>
                 </div>
               </Link>
@@ -168,7 +168,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
                 <div className="absolute bottom-0 left-0 p-6 w-full text-white">
                   <h3 className="text-2xl font-display font-bold mb-1 group-hover:text-amber-400 transition-colors line-clamp-1">{topSpots[2].name}</h3>
                   <div className="flex items-center gap-1.5 text-xs text-white/70">
-                    <MapPin className="w-3.5 h-3.5" /> {topSpots[2].latitude.toFixed(3)}, {topSpots[2].longitude.toFixed(3)}
+                    <MapPin className="w-3.5 h-3.5" /> {topSpots[2].latitude?.toFixed(3) ?? '–'}, {topSpots[2].longitude?.toFixed(3) ?? '–'}
                   </div>
                 </div>
               </Link>
@@ -188,7 +188,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
               </div>
               <h3 className="font-display font-bold text-lg mb-1 group-hover:text-amber-primary transition-colors line-clamp-1">{spot.name}</h3>
               <p className="text-muted text-xs flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5" /> {spot.latitude.toFixed(4)}, {spot.longitude.toFixed(4)}
+                <MapPin className="w-3.5 h-3.5" /> {spot.latitude?.toFixed(4) ?? '–'}, {spot.longitude?.toFixed(4) ?? '–'}
               </p>
             </Link>
           ))}

@@ -285,7 +285,7 @@ export default function SpotDetailPage() {
             <motion.div variants={fadeUp} className="flex items-center flex-wrap gap-4">
               <div className="flex items-center gap-1.5 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-full shadow-xl">
                 <MapPin className="w-4 h-4 text-amber-400" />
-                <span className="text-white/90 text-sm font-medium">{spot.latitude.toFixed(4)}, {spot.longitude.toFixed(4)}</span>
+                <span className="text-white/90 text-sm font-medium">{spot.latitude?.toFixed(4) ?? '–'}, {spot.longitude?.toFixed(4) ?? '–'}</span>
               </div>
               <div className="flex items-center gap-1.5 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-full shadow-xl">
                 <Star className="w-4 h-4 fill-amber-400 text-amber-400" />

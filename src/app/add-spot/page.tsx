@@ -59,6 +59,18 @@ export default function AddSpotPage() {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
+      // Validasi MIME type
+      if (!file.type.startsWith('image/')) {
+        alert('File harus berupa gambar (JPG, PNG, WEBP, dll).')
+        e.target.value = ''
+        return
+      }
+      // Validasi ukuran file (maks 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('Ukuran file terlalu besar. Maksimal 10MB.')
+        e.target.value = ''
+        return
+      }
       setPhotoFile(file)
       setPhotoPreview(URL.createObjectURL(file))
     }
