@@ -227,7 +227,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-background flex flex-col items-center justify-center text-center p-6">
         <Loader2 className="w-12 h-12 text-amber-primary animate-spin mb-4" />
         <h2 className="text-xl font-bold mb-2">Sesi Profil Tidak Ditemukan</h2>
-        <p className="text-muted mb-6 text-sm max-w-sm">Tampaknya ada masalah dengan sesi Anda (mungkin database baru saja direset). Silakan masuk kembali.</p>
+        <p className="text-muted mb-6 text-sm max-w-sm">Sesi masukmu sudah berakhir. Silakan masuk kembali untuk melanjutkan petualangan visualmu.</p>
         <button onClick={handleLogout} className="px-6 py-3 bg-foreground text-background rounded-xl font-bold hover:bg-amber-primary transition-all">
           Keluar & Login Ulang
         </button>
