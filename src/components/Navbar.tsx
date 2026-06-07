@@ -44,7 +44,6 @@ export default function Navbar() {
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
     { name: 'Peta Spot', path: '/map', icon: MapIcon },
-    { name: 'Jelajahi', path: '/spots', icon: Camera },
     { name: 'Komunitas', path: '/community', icon: Users },
     { name: 'Profil', path: '/profile', icon: User },
   ]

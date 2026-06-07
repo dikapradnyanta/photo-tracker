@@ -68,6 +68,13 @@ export default function SpotDetailPage() {
   // Active photo index (0 = best photo)
   const [activeIndex, setActiveIndex] = useState(0)
 
+  // Add Photo State
+  const [isAddingPhoto, setIsAddingPhoto] = useState(false)
+  const [newPhotoFile, setNewPhotoFile] = useState<File | null>(null)
+  const [newPhotoPreview, setNewPhotoPreview] = useState<string | null>(null)
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   // Filmstrip auto-scroll
   const filmstripRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -203,6 +210,73 @@ export default function SpotDetailPage() {
     }
   }
 
+  const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setNewPhotoFile(file)
+      setNewPhotoPreview(URL.createObjectURL(file))
+    }
+  }
+
+  const handleUploadPhoto = async () => {
+    if (!newPhotoFile || !currentUser || !spot) return
+    setIsUploadingPhoto(true)
+    try {
+      const ext = newPhotoFile.name.split('.').pop()
+      const filename = `${currentUser.id}_${Date.now()}.${ext}`
+      const filePath = `${spot.id}/${filename}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('spots')
+        .upload(filePath, newPhotoFile)
+
+      if (uploadError) throw uploadError
+
+      const { data: publicUrlData } = supabase.storage
+        .from('spots')
+        .getPublicUrl(filePath)
+
+      const photoUrl = publicUrlData.publicUrl
+
+      const { error: dbError } = await supabase
+        .from('spot_photos')
+        .insert({
+          spot_id: spot.id,
+          user_id: currentUser.id,
+          photo_url: photoUrl,
+          is_featured: false
+        })
+
+      if (dbError) throw dbError
+
+      alert('Foto berhasil ditambahkan!')
+      setIsAddingPhoto(false)
+      setNewPhotoFile(null)
+      setNewPhotoPreview(null)
+      
+      // Refresh photos
+      const { data: photosData } = await supabase
+        .from('spot_photos')
+        .select('*, users(username, avatar_url), photo_likes(user_id)')
+        .eq('spot_id', spot.id)
+        .order('created_at', { ascending: true })
+        
+      if (photosData) {
+        const formatted = photosData.map((p: any) => ({
+          ...p,
+          likesCount: p.photo_likes?.length || 0,
+          hasLiked: p.photo_likes?.some((l: any) => l.user_id === currentUser?.id) || false
+        }))
+        formatted.sort((a, b) => b.likesCount - a.likesCount)
+        setPhotos(formatted)
+      }
+    } catch (err: any) {
+      alert(`Gagal upload foto: ${err.message}`)
+    } finally {
+      setIsUploadingPhoto(false)
+    }
+  }
+
   const handleCarouselScroll = () => {
     if (carouselRef.current) {
       const scrollLeft = carouselRef.current.scrollLeft
@@ -328,9 +402,19 @@ export default function SpotDetailPage() {
         </div>
       </section>
 
+      {/* ───── GALLERY TOOLBAR ───── */}
+      <div className="relative z-30 max-w-7xl mx-auto px-6 md:px-12 pt-8 pb-4 flex items-center justify-between">
+        <h3 className="text-2xl font-display font-bold">Galeri Spot</h3>
+        {currentUser && (
+          <button onClick={() => setIsAddingPhoto(true)} className="flex items-center gap-2 px-4 py-2 bg-amber-primary text-white text-sm font-bold rounded-full hover:bg-amber-primary/90 transition-colors shadow-lg">
+            <Camera className="w-4 h-4" /> Tambah Foto
+          </button>
+        )}
+      </div>
+
       {/* ───── FILMSTRIP GALLERY ───── */}
       {photos.length > 1 && (
-        <div className="relative z-30 max-w-7xl mx-auto px-6 md:px-12 py-4">
+        <div className="relative z-30 max-w-7xl mx-auto px-6 md:px-12 pb-4">
           <div
             ref={filmstripRef}
             className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory"
@@ -610,6 +694,67 @@ export default function SpotDetailPage() {
           </div>
         </div>
       </section>
+
+      {/* ───── ADD PHOTO MODAL ───── */}
+      <AnimatePresence>
+        {isAddingPhoto && (
+          <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => !isUploadingPhoto && setIsAddingPhoto(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-md bg-background rounded-3xl p-6 shadow-2xl overflow-hidden"
+            >
+              <h3 className="text-2xl font-display font-bold mb-4">Tambah Foto</h3>
+              <p className="text-sm text-foreground/70 mb-6">Bagikan angle terbaikmu untuk spot ini!</p>
+              
+              <div 
+                onClick={() => !isUploadingPhoto && fileInputRef.current?.click()}
+                className={`relative w-full aspect-video rounded-2xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-colors mb-6
+                  ${newPhotoPreview ? 'border-transparent bg-black' : 'border-border bg-surface hover:bg-surface-alt'}
+                `}
+              >
+                {newPhotoPreview ? (
+                  <img src={newPhotoPreview} alt="Preview" className="w-full h-full object-contain" />
+                ) : (
+                  <>
+                    <Camera className="w-10 h-10 text-muted mb-3" />
+                    <span className="text-sm font-bold text-foreground">Pilih Foto</span>
+                    <span className="text-xs text-muted mt-1">PNG, JPG up to 10MB</span>
+                  </>
+                )}
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  className="hidden" 
+                  ref={fileInputRef} 
+                  onChange={handlePhotoFileChange} 
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setIsAddingPhoto(false)}
+                  disabled={isUploadingPhoto}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold bg-surface-alt hover:bg-surface-alt/80 transition-colors disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button 
+                  onClick={handleUploadPhoto}
+                  disabled={!newPhotoFile || isUploadingPhoto}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold bg-amber-primary text-white hover:bg-amber-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isUploadingPhoto ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Upload'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   )
 }
