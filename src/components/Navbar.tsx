@@ -48,6 +48,9 @@ export default function Navbar() {
     { name: 'Profil', path: '/profile', icon: User },
   ]
 
+  const hiddenRoutes = ['/login', '/onboarding']
+  if (hiddenRoutes.includes(pathname)) return null
+
   return (
     <>
       <motion.nav

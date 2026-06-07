@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence, Variants } from 'framer-motion'
@@ -314,7 +313,6 @@ export default function SpotDetailPage() {
       {/* ───── FLOATING NAVBAR ───── */}
       <div className="fixed top-0 left-0 w-full z-[4000] pointer-events-none">
         <div className="pointer-events-auto">
-          <Navbar />
         </div>
       </div>
 

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
@@ -118,7 +117,6 @@ export default function PublicProfilePage() {
   if (notFound || !profile) {
     return (
       <main className="min-h-screen bg-background text-foreground">
-        <Navbar />
         <div className="max-w-2xl mx-auto px-6 py-40 text-center">
           <UserIcon className="w-20 h-20 mx-auto mb-6 opacity-10" />
           <h1 className="text-4xl font-display font-bold mb-3">Profil Tidak Ditemukan</h1>
@@ -133,7 +131,6 @@ export default function PublicProfilePage() {
 
   return (
     <main className="min-h-screen bg-background text-foreground pb-20 transition-colors">
-      <Navbar />
 
       {/* Profile Header */}
       <div className="relative pt-[var(--nav-height)] pb-12 px-6 overflow-hidden">

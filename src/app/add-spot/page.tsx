@@ -1,6 +1,5 @@
 'use client'
 
-import Navbar from '@/components/Navbar'
 import { useState, useEffect } from 'react'
 import { MapPin, Camera, Star, ArrowLeft, Send, Loader2, ChevronDown, ChevronUp, LocateFixed, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
@@ -293,7 +292,6 @@ export default function AddSpotPage() {
 
   return (
     <main className="min-h-screen bg-background text-foreground pb-20 transition-colors">
-      <Navbar />
 
       <div className="max-w-3xl mx-auto px-6 pt-[calc(var(--nav-height)+24px)]">
         <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-amber-primary transition-colors mb-8 group">

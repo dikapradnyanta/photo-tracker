@@ -1,6 +1,5 @@
 'use client'
 
-import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { ChevronRight, Search, Users, X, Loader2 } from 'lucide-react'
@@ -121,7 +120,6 @@ export default function CommunityPage() {
 
   return (
     <main className="min-h-screen bg-background text-foreground pb-20">
-      <Navbar />
 
       <div className="pt-[var(--nav-height)] pb-12 px-6">
         <div className="max-w-3xl mx-auto mt-12">

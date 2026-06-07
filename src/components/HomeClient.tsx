@@ -1,6 +1,5 @@
 'use client'
 
-import Navbar from "@/components/Navbar";
 import { Camera, Map as MapIcon, ArrowRight, Compass, Star, MapPin, Clock, Zap } from "lucide-react";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
@@ -40,7 +39,6 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
   
   return (
     <main className="min-h-screen bg-background text-foreground selection:bg-amber-primary selection:text-white overflow-hidden">
-      <Navbar />
 
       {/* ─────────── HERO: SPLIT WITH STACKED CARDS ─────────── */}
       <section className="relative pt-[calc(var(--nav-height)+48px)] pb-32 px-6 md:px-12 noise min-h-[90vh] flex flex-col justify-center border-b border-border">

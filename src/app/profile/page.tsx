@@ -1,6 +1,5 @@
 'use client'
 
-import Navbar from '@/components/Navbar'
 import { 
   User as UserIcon, 
   Settings, 
@@ -237,7 +236,6 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen bg-background text-foreground pb-20 transition-colors">
-      <Navbar />
 
       {/* Header Profile */}
       <div className="relative pt-[var(--nav-height)] pb-16 px-6">
