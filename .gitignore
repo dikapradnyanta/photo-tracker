@@ -51,15 +51,12 @@ next-env.d.ts
 .idea/
 
 # supabase local dev — jangan di-push ke repo publik
-supabase/.branches/
-supabase/.temp/
-supabase/migrations/
-supabase/seed.sql
+supabase/
 
-# script helpers (tidak perlu di repo)
-seed-photos.js
-seed-community.js
-create_rpc.sql
-supabase_*.sql
+# script helpers & sql (tidak perlu di repo)
+*.sql
+*.js
+!next.config.js
+!tailwind.config.js
+!postcss.config.js
 status.txt
-fix-colors.js
