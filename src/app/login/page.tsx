@@ -22,6 +22,43 @@ export default function LoginPage() {
     setSuccess(null)
   }, [isSignUp])
 
+  // ── Terjemahkan error teknis Supabase ke bahasa yang ramah ──────────────
+  const toFriendlyError = (rawMessage: string, mode: 'login' | 'signup'): string => {
+    const msg = rawMessage.toLowerCase()
+
+    if (msg.includes('user already registered') || msg.includes('already been registered')) {
+      return '__ALREADY_REGISTERED__'
+    }
+    if (msg.includes('invalid login credentials') || msg.includes('invalid credentials')) {
+      return 'Email atau password salah. Pastikan keduanya sudah benar.'
+    }
+    if (msg.includes('email not confirmed')) {
+      return 'Akun belum dikonfirmasi. Cek kotak masuk emailmu dan klik tautan verifikasi.'
+    }
+    if (msg.includes('password should be at least') || msg.includes('password must be')) {
+      return 'Password terlalu pendek. Gunakan minimal 6 karakter.'
+    }
+    if (msg.includes('unable to validate email') || msg.includes('invalid format')) {
+      return 'Format email tidak valid. Contoh: nama@email.com'
+    }
+    if (msg.includes('signup is disabled')) {
+      return 'Pendaftaran sementara tidak tersedia. Coba lagi nanti.'
+    }
+    if (msg.includes('too many requests') || msg.includes('rate limit')) {
+      return 'Terlalu banyak percobaan. Tunggu sebentar sebelum coba lagi.'
+    }
+    if (msg.includes('network') || msg.includes('fetch')) {
+      return 'Gagal terhubung ke server. Periksa koneksi internetmu.'
+    }
+    if (msg.includes('weak password')) {
+      return 'Password terlalu lemah. Gunakan kombinasi huruf dan angka.'
+    }
+    // Fallback generic
+    return mode === 'signup'
+      ? 'Gagal membuat akun. Coba lagi atau hubungi dukungan.'
+      : 'Gagal masuk. Periksa email dan password-mu.'
+  }
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -39,14 +76,27 @@ export default function LoginPage() {
             }
           }
         })
-        if (error) throw error
-        setSuccess('Berhasil terdaftar! Silakan cek email Anda untuk verifikasi.')
+        if (error) {
+          const friendly = toFriendlyError(error.message, 'signup')
+          if (friendly === '__ALREADY_REGISTERED__') {
+            // Auto-switch ke tab login dengan pesan ramah
+            setIsSignUp(false)
+            setSuccess('Email ini sudah terdaftar 👋 Silakan masuk dengan password-mu.')
+          } else {
+            setError(friendly)
+          }
+          return
+        }
+        setSuccess('Akun berhasil dibuat! Cek kotak masuk emailmu untuk konfirmasi sebelum masuk.')
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
-        if (error) throw error
+        if (error) {
+          setError(toFriendlyError(error.message, 'login'))
+          return
+        }
         
         // Check if user has completed onboarding
         const { data: profile } = await supabase
@@ -62,7 +112,13 @@ export default function LoginPage() {
         }
       }
     } catch (err: any) {
-      setError(err.message)
+      const friendly = toFriendlyError(err?.message || '', isSignUp ? 'signup' : 'login')
+      if (friendly === '__ALREADY_REGISTERED__') {
+        setIsSignUp(false)
+        setSuccess('Email ini sudah terdaftar 👋 Silakan masuk dengan password-mu.')
+      } else {
+        setError(friendly)
+      }
     } finally {
       setLoading(false)
     }

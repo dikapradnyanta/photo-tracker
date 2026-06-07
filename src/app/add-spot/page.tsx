@@ -2,7 +2,7 @@
 
 import Navbar from '@/components/Navbar'
 import { useState, useEffect } from 'react'
-import { MapPin, Camera, Star, ArrowLeft, Send, Loader2, ChevronDown, ChevronUp, LocateFixed } from 'lucide-react'
+import { MapPin, Camera, Star, ArrowLeft, Send, Loader2, ChevronDown, ChevronUp, LocateFixed, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
@@ -41,10 +41,33 @@ export default function AddSpotPage() {
 
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [photoHash, setPhotoHash] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const router = useRouter()
+
+  // ── Hitung SHA-256 fingerprint dari konten file ──────────────────────────
+  const computeFileHash = async (file: File): Promise<string> => {
+    const buffer = await file.arrayBuffer()
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+  }
+
+  // ── Cek & simpan hash di localStorage per user ──────────────────────────
+  const getUploadedHashes = (userId: string): string[] => {
+    try {
+      return JSON.parse(localStorage.getItem(`pt_uploads_${userId}`) || '[]')
+    } catch { return [] }
+  }
+  const saveUploadedHash = (userId: string, hash: string) => {
+    const hashes = getUploadedHashes(userId)
+    hashes.push(hash)
+    // Simpan maks 200 hash terakhir
+    localStorage.setItem(`pt_uploads_${userId}`, JSON.stringify(hashes.slice(-200)))
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -56,24 +79,43 @@ export default function AddSpotPage() {
     })
   }, [router])
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      // Validasi MIME type
-      if (!file.type.startsWith('image/')) {
-        alert('File harus berupa gambar (JPG, PNG, WEBP, dll).')
-        e.target.value = ''
-        return
-      }
-      // Validasi ukuran file (maks 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        alert('Ukuran file terlalu besar. Maksimal 10MB.')
-        e.target.value = ''
-        return
-      }
-      setPhotoFile(file)
-      setPhotoPreview(URL.createObjectURL(file))
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null)
+    if (!e.target.files || !e.target.files[0]) return
+    const file = e.target.files[0]
+
+    // Validasi tipe file
+    if (!file.type.startsWith('image/')) {
+      setUploadError('File harus berupa gambar (JPG, PNG, WEBP, dll).')
+      e.target.value = ''
+      return
     }
+    // Validasi ukuran file (maks 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('Ukuran foto terlalu besar. Gunakan foto di bawah 10MB.')
+      e.target.value = ''
+      return
+    }
+
+    // ── Cek duplikat via SHA-256 fingerprint ──────────────────────────────
+    try {
+      const hash = await computeFileHash(file)
+      const userId = user?.id || 'guest'
+      const previousHashes = getUploadedHashes(userId)
+
+      if (previousHashes.includes(hash)) {
+        setUploadError('Foto ini sudah pernah kamu unggah sebelumnya. Pilih foto yang berbeda agar spotmu lebih unik! 📸')
+        e.target.value = ''
+        return
+      }
+
+      setPhotoHash(hash)
+    } catch {
+      // Hash gagal dihitung — lanjut saja tanpa blokir
+    }
+
+    setPhotoFile(file)
+    setPhotoPreview(URL.createObjectURL(file))
   }
 
   const handleGetCurrentLocation = () => {
@@ -99,11 +141,12 @@ export default function AddSpotPage() {
     }
     // latitude & longitude sudah otomatis terisi dari crosshair peta
 
+    setUploadError(null)
     setLoading(true)
     try {
       // 1. Upload Photo to Storage
       const fileExt = photoFile.name.split('.').pop()
-      const fileName = `${Math.random()}.${fileExt}`
+      const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
       const filePath = `spot-heroes/${fileName}`
 
       const { error: uploadError } = await supabase.storage
@@ -174,10 +217,22 @@ export default function AddSpotPage() {
         caption: 'Added Photo',
       })
 
+      // Simpan hash setelah upload berhasil agar deteksi duplikat aktif
+      if (photoHash && user?.id) {
+        saveUploadedHash(user.id, photoHash)
+      }
+
       router.push('/map')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding spot:', error)
-      alert('Gagal menambahkan spot. Pastikan semua data valid.')
+      const msg = error?.message?.toLowerCase() || ''
+      if (msg.includes('storage') || msg.includes('upload')) {
+        setUploadError('Gagal mengunggah foto. Periksa koneksi internetmu dan coba lagi.')
+      } else if (msg.includes('duplicate') || msg.includes('unique')) {
+        setUploadError('Data ini sudah ada di sistem. Periksa kembali nama spot dan lokasinya.')
+      } else {
+        setUploadError('Terjadi masalah saat menyimpan spot. Coba lagi dalam beberapa saat.')
+      }
     } finally {
       setLoading(false)
     }
@@ -316,6 +371,18 @@ export default function AddSpotPage() {
                 onChange={handlePhotoChange}
               />
             </div>
+
+            {/* Error upload — validasi & duplikat */}
+            {uploadError && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400"
+              >
+                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                <p className="text-sm font-medium leading-snug">{uploadError}</p>
+              </motion.div>
+            )}
           </motion.section>
 
           {/* ── Detail Tambahan accordion (optional) ───── */}
