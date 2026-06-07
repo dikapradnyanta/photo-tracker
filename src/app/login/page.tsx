@@ -149,12 +149,9 @@ export default function LoginPage() {
               "Setiap spot punya ceritanya sendiri."
             </blockquote>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-amber-primary/20 overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64" alt="" className="w-full h-full object-cover" />
-              </div>
               <div>
-                <p className="text-sm font-bold">Alex Mercer</p>
-                <p className="text-xs text-muted">Landscape Photographer</p>
+                <p className="text-sm font-bold">Dika Pradnyanta</p>
+                <p className="text-xs text-muted">Founder · PhotoTracker</p>
               </div>
             </div>
           </div>
