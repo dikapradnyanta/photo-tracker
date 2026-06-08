@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@custom-variant dark (&:where(.dark, .dark *));
 /* ── Raw tokens — override per mode ─────────────────── */
 :root {
   --bg:             #F7F6F3;
