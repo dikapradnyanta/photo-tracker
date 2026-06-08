@@ -67,7 +67,7 @@ export default function LoginPage() {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -88,6 +88,15 @@ export default function LoginPage() {
           }
           return
         }
+
+        // Supabase mengembalikan user dengan identities kosong jika email sudah terdaftar
+        // (ketika Confirm Email aktif untuk mencegah email enumeration)
+        if (data?.user?.identities && data.user.identities.length === 0) {
+          setIsSignUp(false)
+          setSuccess('Email ini sudah terdaftar 👋 Silakan masuk dengan password-mu.')
+          return
+        }
+
         setSuccess('Akun berhasil dibuat! Cek kotak masuk emailmu untuk konfirmasi sebelum masuk.')
       } else {
         const { error } = await supabase.auth.signInWithPassword({
