@@ -154,7 +154,8 @@ export default function LoginPage() {
         
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <Link href="/" className="flex items-center gap-2 group">
-            <Camera className="w-6 h-6 text-amber-primary" />
+            <img src="/logo.svg" alt="PhotoTracker Logo" className="w-8 h-8 object-contain group-hover:scale-105 transition-transform dark:hidden" />
+            <img src="/logo-light.svg" alt="PhotoTracker Logo" className="w-8 h-8 object-contain group-hover:scale-105 transition-transform hidden dark:block" />
             <span className="text-xl font-display font-bold tracking-tight">
               Photo<span className="text-amber-primary italic">Tracker</span>
             </span>

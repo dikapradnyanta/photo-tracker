@@ -15,7 +15,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
         <div className="md:col-span-2">
           <div className="flex items-center gap-2 mb-6">
-            <Camera className="w-6 h-6 text-amber-primary" />
+            <img src="/logo.svg" alt="PhotoTracker Logo" className="w-8 h-8 object-contain dark:hidden" />
+            <img src="/logo-light.svg" alt="PhotoTracker Logo" className="w-8 h-8 object-contain hidden dark:block" />
             <span className="font-display font-bold text-2xl tracking-tight">PhotoTracker</span>
           </div>
           <p className="text-sm text-muted leading-relaxed max-w-sm">

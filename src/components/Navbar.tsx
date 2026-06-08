@@ -89,7 +89,9 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group shrink-0 mr-2">
-            <span className="text-xl md:text-2xl font-display font-bold tracking-tight">
+            <img src="/logo.svg" alt="PhotoTracker Logo" className="w-8 h-8 md:w-9 md:h-9 object-contain group-hover:scale-105 transition-transform dark:hidden" />
+            <img src="/logo-light.svg" alt="PhotoTracker Logo" className="w-8 h-8 md:w-9 md:h-9 object-contain group-hover:scale-105 transition-transform hidden dark:block" />
+            <span className="text-xl md:text-2xl font-display font-bold tracking-tight hidden sm:block">
               Photo<span className="text-amber-primary italic group-hover:not-italic transition-all">Tracker</span>
             </span>
           </Link>
@@ -169,9 +171,13 @@ export default function Navbar() {
             >
               {/* Drawer Header */}
               <div className="flex items-center justify-between px-5 pt-6 pb-4 border-b border-border">
-                <span className="text-lg font-display font-bold">
-                  Photo<span className="text-amber-primary italic">Tracker</span>
-                </span>
+                <div className="flex items-center gap-2">
+                  <img src="/logo.svg" alt="PhotoTracker Logo" className="w-7 h-7 object-contain dark:hidden" />
+                  <img src="/logo-light.svg" alt="PhotoTracker Logo" className="w-7 h-7 object-contain hidden dark:block" />
+                  <span className="text-lg font-display font-bold">
+                    Photo<span className="text-amber-primary italic">Tracker</span>
+                  </span>
+                </div>
                 <button
                   onClick={() => setMenuOpen(false)}
                   className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-alt transition-colors"
