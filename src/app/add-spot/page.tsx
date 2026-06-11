@@ -262,12 +262,14 @@ export default function AddSpotPage() {
 
       if (spotError) throw spotError
 
-      await supabase.from('spot_photos').insert({
+      const { error: photoError } = await supabase.from('spot_photos').insert({
         spot_id: spotData.id,
         user_id: user.id,
         photo_url: publicUrl,
         caption: 'Added Photo',
       })
+
+      if (photoError) throw photoError
 
       if (photoHash && user?.id) {
         saveUploadedHash(user.id, photoHash)
