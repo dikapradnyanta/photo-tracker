@@ -61,6 +61,16 @@ export default function OnboardingPage() {
   }, [router])
 
   const handleNext = () => {
+    if (step === 1) {
+      if (formData.username.length < 3) {
+        setErrorMsg('Username minimal 3 karakter.')
+        return
+      }
+      if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+        setErrorMsg('Username hanya boleh berisi huruf, angka, dan garis bawah (_) tanpa spasi.')
+        return
+      }
+    }
     setErrorMsg(null)
     setStep(s => s + 1)
   }

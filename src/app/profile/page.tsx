@@ -137,9 +137,17 @@ export default function ProfilePage() {
   const handleSaveSettings = async () => {
     if (!profile) return
 
-    // Validasi username tidak boleh kosong
+    // Validasi username
     if (!editData.username?.trim()) {
       alert('Username tidak boleh kosong.')
+      return
+    }
+    if (editData.username.length < 3) {
+      alert('Username minimal 3 karakter.')
+      return
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(editData.username)) {
+      alert('Username hanya boleh berisi huruf, angka, dan garis bawah (_) tanpa spasi.')
       return
     }
 
@@ -185,7 +193,12 @@ export default function ProfilePage() {
       setAvatarPreview(null)
     } catch (error: any) {
       console.error('Error updating settings:', error)
-      alert(`Gagal menyimpan pengaturan: ${error.message || 'Error tidak diketahui'}`)
+      const msg = error?.message?.toLowerCase() || ''
+      if (msg.includes('unique') || msg.includes('duplicate')) {
+        alert('Username ini sudah dipakai oleh orang lain. Silakan pilih username yang berbeda.')
+      } else {
+        alert(`Gagal menyimpan pengaturan: ${error.message || 'Error tidak diketahui'}`)
+      }
     } finally {
       setSaving(false)
     }
