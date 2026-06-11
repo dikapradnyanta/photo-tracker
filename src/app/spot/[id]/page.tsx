@@ -112,7 +112,7 @@ export default function SpotDetailPage() {
 
         const { data: photosData } = await supabase
           .from('spot_photos')
-          .select('*, users(username, avatar_url), photo_likes(user_id)')
+          .select('*, users!spot_photos_user_id_fkey(username, avatar_url), photo_likes(user_id)')
           .eq('spot_id', id)
           .order('created_at', { ascending: true })
 
@@ -256,7 +256,7 @@ export default function SpotDetailPage() {
       // Refresh photos
       const { data: photosData } = await supabase
         .from('spot_photos')
-        .select('*, users(username, avatar_url), photo_likes(user_id)')
+        .select('*, users!spot_photos_user_id_fkey(username, avatar_url), photo_likes(user_id)')
         .eq('spot_id', spot.id)
         .order('created_at', { ascending: true })
         
