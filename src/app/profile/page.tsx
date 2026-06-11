@@ -146,8 +146,8 @@ export default function ProfilePage() {
       alert('Username minimal 3 karakter.')
       return
     }
-    if (!/^[a-zA-Z0-9_]+$/.test(editData.username)) {
-      alert('Username hanya boleh berisi huruf, angka, dan garis bawah (_) tanpa spasi.')
+    if (!/^[a-z0-9_]+$/.test(editData.username)) {
+      alert('Username hanya boleh berisi huruf kecil, angka, dan garis bawah (_) tanpa spasi.')
       return
     }
 
