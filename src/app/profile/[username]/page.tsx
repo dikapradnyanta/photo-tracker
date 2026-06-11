@@ -67,11 +67,12 @@ export default function PublicProfilePage() {
   const fetchProfile = async () => {
     try {
       setLoading(true)
+      const decodedUsername = decodeURIComponent(username)
 
       const { data: profileData, error } = await supabase
         .from('users')
         .select('*')
-        .eq('username', username)
+        .eq('username', decodedUsername)
         .single()
 
       if (error || !profileData) {
@@ -120,7 +121,7 @@ export default function PublicProfilePage() {
         <div className="max-w-2xl mx-auto px-6 py-40 text-center">
           <UserIcon className="w-20 h-20 mx-auto mb-6 opacity-10" />
           <h1 className="text-4xl font-display font-bold mb-3">Profil Tidak Ditemukan</h1>
-          <p className="text-muted mb-8">Username <span className="font-mono text-amber-primary">@{username}</span> tidak ada di PhotoTracker.</p>
+          <p className="text-muted mb-8">Username <span className="font-mono text-amber-primary">@{decodeURIComponent(username)}</span> tidak ada di PhotoTracker.</p>
           <Link href="/spots" className="btn-primary inline-flex items-center gap-2">
             Jelajahi Spot
           </Link>
