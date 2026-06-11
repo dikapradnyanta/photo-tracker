@@ -283,7 +283,7 @@ export default function AddSpotPage() {
       } else if (msg.includes('duplicate') || msg.includes('unique')) {
         setUploadError('Data ini sudah ada di sistem. Periksa kembali nama spot dan lokasinya.')
       } else {
-        setUploadError('Terjadi masalah saat menyimpan spot. Coba lagi dalam beberapa saat.')
+        setUploadError(`Terjadi masalah saat menyimpan spot. Coba lagi dalam beberapa saat. (Error: ${msg})`)
       }
     } finally {
       setLoading(false)
