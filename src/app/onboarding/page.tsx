@@ -29,8 +29,6 @@ export default function OnboardingPage() {
   })
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
-  const [firstPhotoFile, setFirstPhotoFile] = useState<File | null>(null)
-  const [firstPhotoPreview, setFirstPhotoPreview] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -79,16 +77,11 @@ export default function OnboardingPage() {
     setStep(s => s - 1)
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'firstPhoto') => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar') => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
-      if (type === 'avatar') {
-        setAvatarFile(file)
-        setAvatarPreview(URL.createObjectURL(file))
-      } else {
-        setFirstPhotoFile(file)
-        setFirstPhotoPreview(URL.createObjectURL(file))
-      }
+      setAvatarFile(file)
+      setAvatarPreview(URL.createObjectURL(file))
     }
   }
 
@@ -138,14 +131,7 @@ export default function OnboardingPage() {
 
       if (updateError) throw updateError
 
-      // 3. Upload First Photo (Optional)
-      if (firstPhotoFile) {
-        const fileExt = firstPhotoFile.name.split('.').pop()
-        const fileName = `first-photo-${user.id}-${Date.now()}.${fileExt}`
-        const filePath = `first-photos/${fileName}`
 
-        await supabase.storage.from('photos').upload(filePath, firstPhotoFile)
-      }
 
       router.push('/map')
     } catch (error: any) {
@@ -280,23 +266,7 @@ export default function OnboardingPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-2 pt-4">
-                      <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted">Foto Pertama (Karya Terbaikmu)</label>
-                      <label 
-                        htmlFor="first-photo-input"
-                        className="relative h-40 rounded-3xl bg-surface-alt border-2 border-dashed border-border flex items-center justify-center cursor-pointer group hover:border-amber-primary/50 transition-all block w-full"
-                      >
-                        {firstPhotoPreview ? (
-                          <img src={firstPhotoPreview} alt="First photo preview" className="w-full h-full object-cover rounded-2xl" />
-                        ) : (
-                          <div className="text-center">
-                            <ImageIcon className="w-8 h-8 text-muted mx-auto mb-2" />
-                            <p className="text-[10px] font-bold text-muted uppercase">Pilih Foto Pertama</p>
-                          </div>
-                        )}
-                        <input id="first-photo-input" type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, 'firstPhoto')} />
-                      </label>
-                    </div>
+
                   </div>
                 </div>
               )}
