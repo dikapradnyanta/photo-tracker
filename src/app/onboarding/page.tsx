@@ -332,10 +332,7 @@ export default function OnboardingPage() {
                                 key={i}
                                 className="px-4 py-3 text-sm hover:bg-amber-primary/10 hover:text-amber-primary cursor-pointer transition-colors border-b border-border/50 last:border-0"
                                 onClick={() => {
-                                  // Nominatim gives full address, let's take just the first 2-3 parts for brevity if it's too long
-                                  const parts = loc.display_name.split(', ')
-                                  const shortName = parts.length > 2 ? `${parts[0]}, ${parts[1]}` : loc.display_name
-                                  setFormData({...formData, location: shortName})
+                                  setFormData({...formData, location: loc.display_name})
                                   setShowLocSuggestions(false)
                                 }}
                               >
