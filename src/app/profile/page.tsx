@@ -48,6 +48,7 @@ export default function ProfilePage() {
   const [editData, setEditData] = useState<Partial<Profile>>({})
   const [spots, setSpots] = useState<Spot[]>([])
   const [photos, setPhotos] = useState<SpotPhoto[]>([])
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [genres, setGenres] = useState<string[]>(['Semua'])
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
@@ -312,9 +313,25 @@ export default function ProfilePage() {
       {/* Portfolio Section & Actions */}
       <div className="max-w-5xl mx-auto px-6">
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <Grid className="w-4 h-4 text-amber-primary" />
-            <p className="text-[10px] font-mono uppercase tracking-widest text-muted">Portfolio</p>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 pr-4 border-r border-border">
+              <Grid className="w-4 h-4 text-amber-primary" />
+              <p className="text-[10px] font-mono uppercase tracking-widest text-muted">Semua Foto</p>
+            </div>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-amber-primary text-white shadow-lg shadow-amber-primary/20' : 'bg-surface-alt border border-border text-muted hover:border-amber-primary/40'}`}
+              >
+                <Grid className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-amber-primary text-white shadow-lg shadow-amber-primary/20' : 'bg-surface-alt border border-border text-muted hover:border-amber-primary/40'}`}
+              >
+                <ImageIcon className="w-4 h-4" />
+              </button>
+            </div>
           </div>
           
           <div className="flex items-center gap-3">
@@ -358,30 +375,45 @@ export default function ProfilePage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className={viewMode === 'grid' ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" : "flex flex-col gap-8 max-w-2xl mx-auto"}>
             {photos.map((photo, i) => (
               <motion.div
                 key={photo.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.03 }}
-                className="group relative aspect-square rounded-[24px] overflow-hidden panel hover:border-amber-primary transition-all cursor-pointer"
+                className={`group relative overflow-hidden panel hover:border-amber-primary transition-all cursor-pointer ${viewMode === 'grid' ? 'aspect-square rounded-[24px]' : 'w-full rounded-[32px]'}`}
               >
-                <img
-                  src={photo.photo_url}
-                  alt={photo.caption || ''}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
-                  <p className="text-[10px] font-mono text-amber-primary uppercase font-bold mb-1">
+                {viewMode === 'list' ? (
+                  <div className="relative w-full" style={{ paddingBottom: '120%' }}>
+                    <img
+                      src={photo.photo_url}
+                      alt={photo.caption || ''}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  </div>
+                ) : (
+                  <img
+                    src={photo.photo_url}
+                    alt={photo.caption || ''}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-6 flex flex-col justify-end">
+                  <p className={`${viewMode === 'list' ? 'text-lg' : 'text-[10px]'} font-mono text-amber-primary uppercase font-bold mb-2`}>
                     {photo.spots?.name}
                   </p>
-                  <div className="flex items-center gap-1.5">
-                    <Zap className="w-3 h-3 text-amber-primary" />
-                    <span className="text-[8px] text-white/60 uppercase line-clamp-1">
-                      {photo.spots?.genre?.[0] || 'Photo'}
+                  <div className="flex items-center gap-2">
+                    <Zap className={`${viewMode === 'list' ? 'w-4 h-4' : 'w-3 h-3'} text-amber-primary`} />
+                    <span className={`${viewMode === 'list' ? 'text-xs' : 'text-[8px]'} text-white/80 uppercase tracking-wider line-clamp-1`}>
+                      {photo.exif_camera || photo.spots?.genre?.[0] || 'Photo'}
                     </span>
                   </div>
+                  {viewMode === 'list' && photo.caption && (
+                    <p className="mt-4 text-sm text-white/90 italic font-serif leading-relaxed">
+                      "{photo.caption}"
+                    </p>
+                  )}
                 </div>
               </motion.div>
             ))}
