@@ -331,7 +331,8 @@ export default function OnboardingPage() {
                               <div 
                                 key={i}
                                 className="px-4 py-3 text-sm hover:bg-amber-primary/10 hover:text-amber-primary cursor-pointer transition-colors border-b border-border/50 last:border-0"
-                                onClick={() => {
+                                onMouseDown={(e) => {
+                                  e.preventDefault() // Mencegah input kehilangan fokus terlalu cepat
                                   setFormData({...formData, location: loc.display_name})
                                   setShowLocSuggestions(false)
                                 }}
@@ -364,7 +365,8 @@ export default function OnboardingPage() {
                               <div 
                                 key={i}
                                 className="px-4 py-3 text-sm hover:bg-amber-primary/10 hover:text-amber-primary cursor-pointer transition-colors border-b border-border/50 last:border-0"
-                                onClick={() => {
+                                onMouseDown={(e) => {
+                                  e.preventDefault()
                                   setFormData({...formData, gear: gear})
                                   setShowGearSuggestions(false)
                                 }}
