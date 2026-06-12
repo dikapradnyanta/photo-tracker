@@ -253,95 +253,104 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-background text-foreground pb-20 transition-colors">
 
-      {/* Header Profile - Instagram Style */}
-      <div className="max-w-4xl mx-auto pt-28 md:pt-32 pb-8 px-4 md:px-8">
-        <div className="flex flex-col md:flex-row gap-6 md:gap-16 items-start">
+      {/* Header Profile */}
+      <div className="relative pt-32 pb-16 px-6">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 relative z-10 items-end">
           
-          {/* Avatar Area */}
-          <div className="shrink-0 mx-auto md:mx-0">
-            <div className="relative w-28 h-28 md:w-40 md:h-40 rounded-full overflow-hidden border border-border/50 p-1">
-              <div className="w-full h-full rounded-full overflow-hidden bg-surface-alt relative">
-                {profile.avatar_url ? (
-                  <Image src={profile.avatar_url} alt={profile.username || ''} fill sizes="160px" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center"><UserIcon className="w-12 h-12 text-muted/30" /></div>
-                )}
-              </div>
+          {/* Info Area (Left, Large Typography) */}
+          <div className="md:col-span-8 flex flex-col justify-end space-y-6">
+            <div>
+              <span className="px-3 py-1 bg-amber-primary text-white text-[10px] font-mono font-bold rounded-sm uppercase tracking-widest mb-4 inline-block">
+                {userLevel} Photographer
+              </span>
+              <h1 className="text-5xl md:text-7xl font-display font-black leading-[0.9] tracking-tighter">
+                {profile.full_name || profile.username || 'Fotografer'}
+              </h1>
+            </div>
+
+            <p className="max-w-xl text-lg md:text-2xl font-serif text-muted leading-relaxed italic opacity-90 border-l-2 border-amber-primary pl-6">
+              "{profile.bio || 'Mulai ceritamu di sini...'}"
+            </p>
+
+            <div className="flex flex-wrap items-center gap-6 text-xs font-mono text-muted uppercase tracking-widest pt-4">
+              <span className="flex items-center gap-2"><UserIcon className="w-4 h-4 text-amber-primary" /> @{profile.username}</span>
+              <span className="flex items-center gap-2"><MapPin className="w-4 h-4 text-amber-primary" /> {profile.location ? profile.location.split(', ').slice(0, 2).join(', ') : 'Basecamp belum diatur'}</span>
+              <span className="flex items-center gap-2"><HardDrive className="w-4 h-4 text-amber-primary" /> {profile.gear || 'No Gear'}</span>
             </div>
           </div>
 
-          {/* Info Area */}
-          <div className="flex-1 w-full text-center md:text-left">
-            {/* Row 1: Username & Buttons */}
-            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 mb-6">
-              <h1 className="text-xl md:text-2xl font-medium">
-                {profile.username}
-              </h1>
-              <div className="flex items-center justify-center gap-2">
-                <button 
-                  onClick={() => setIsEditing(true)}
-                  className="px-5 py-1.5 bg-surface-alt hover:bg-surface border border-border rounded-lg text-sm font-bold transition-colors"
-                >
-                  Edit Profil
-                </button>
-                <button 
-                  onClick={handleShare}
-                  className="px-5 py-1.5 bg-surface-alt hover:bg-surface border border-border rounded-lg text-sm font-bold transition-colors flex items-center gap-2"
-                >
-                  {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
-                  {copied ? <span className="text-emerald-500 hidden md:inline">Tersalin</span> : <span className="hidden md:inline">Bagikan</span>}
-                </button>
-              </div>
-            </div>
-
-            {/* Row 2: Stats */}
-            <div className="flex justify-center md:justify-start gap-8 mb-6">
-              <div className="text-center md:text-left">
-                <span className="font-bold text-lg">{spots.length}</span> <span className="text-muted">spot</span>
-              </div>
-              <div className="text-center md:text-left">
-                <span className="font-bold text-lg">{photos.length}</span> <span className="text-muted">foto</span>
-              </div>
-            </div>
-
-            {/* Row 3: Bio & Details */}
-            <div className="space-y-1">
-              <h2 className="font-bold text-sm">{profile.full_name || profile.username}</h2>
-              <div className="py-1">
-                <span className="inline-block px-2 py-0.5 bg-amber-primary/10 text-amber-primary text-[10px] font-bold rounded uppercase tracking-wider">
-                  {userLevel} Photographer
-                </span>
-              </div>
-              <p className="text-sm whitespace-pre-wrap">{profile.bio || 'Belum ada bio.'}</p>
-              
-              {(profile.location || profile.gear) && (
-                <div className="flex flex-col gap-1 mt-3 text-xs text-muted">
-                  {profile.location && (
-                    <div className="flex items-center justify-center md:justify-start gap-2">
-                      <MapPin className="w-3.5 h-3.5" />
-                      <span className="truncate max-w-[250px]" title={profile.location}>
-                        {/* Jika teks kepanjangan dari auto-suggest, potong tampilannya */}
-                        {profile.location.split(', ').slice(0, 2).join(', ')}
-                      </span>
-                    </div>
-                  )}
-                  {profile.gear && (
-                    <div className="flex items-center justify-center md:justify-start gap-2">
-                      <HardDrive className="w-3.5 h-3.5" />
-                      <span>{profile.gear}</span>
-                    </div>
-                  )}
+          {/* Avatar & Stats Area (Right) */}
+          <div className="md:col-span-4 flex flex-col items-end gap-8">
+            <div className="relative w-40 h-48 md:w-56 md:h-72 bg-surface border border-border shadow-2xl p-2 transform rotate-2 hover:rotate-0 transition-transform duration-500">
+              <div className="w-full h-full bg-sand/20 overflow-hidden relative">
+                {profile.avatar_url ? (
+                  <Image src={profile.avatar_url} alt={profile.username || ''} fill sizes="250px" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover grayscale hover:grayscale-0 transition-all duration-700" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center"><UserIcon className="w-16 h-16 opacity-30" /></div>
+                )}
+                <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-amber-primary rounded-full flex items-center justify-center border-4 border-background shadow-xl">
+                  <Award className="w-6 h-6 text-white" />
                 </div>
-              )}
+              </div>
+            </div>
+
+            <div className="flex gap-6 text-right">
+              <div>
+                <span className="block text-3xl font-display font-bold">{spots.length}</span>
+                <span className="text-[10px] font-mono text-muted uppercase tracking-widest">Spots</span>
+              </div>
+              <div className="w-px h-10 bg-border" />
+              <div>
+                <span className="block text-3xl font-display font-bold">{photos.length}</span>
+                <span className="text-[10px] font-mono text-muted uppercase tracking-widest">Photos</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-1 md:px-8 border-t border-border mt-4">
+      <div className="max-w-5xl mx-auto px-6">
+        {/* Gallery Section */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex gap-2">
+            <button className="p-2 bg-amber-primary text-white rounded-lg shadow-lg"><Grid className="w-4 h-4" /></button>
+            <button className="p-2 bg-surface-alt border border-border rounded-lg text-muted"><ImageIcon className="w-4 h-4" /></button>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={handleShare}
+              className="px-4 md:px-6 py-2 bg-surface-alt border border-border rounded-xl text-xs font-bold flex items-center gap-2 hover:border-amber-primary/40 transition-all"
+            >
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={copied ? 'copied' : 'share'}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex items-center gap-2"
+                >
+                  {copied ? (
+                    <><Check className="w-3.5 h-3.5 text-emerald-500" /> <span className="text-emerald-500">Tautan Disalin!</span></>
+                  ) : (
+                    <><Share2 className="w-3.5 h-3.5" /> <span className="hidden md:inline">Bagikan Profil</span><span className="md:hidden">Bagikan</span></>
+                  )}
+                </motion.span>
+              </AnimatePresence>
+            </button>
+            <button 
+              onClick={() => setIsEditing(true)}
+              className="px-4 md:px-6 py-2 bg-surface-alt border border-border rounded-xl text-xs font-bold flex items-center gap-2 hover:border-amber-primary transition-all"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Edit Profil</span><span className="md:hidden">Edit</span>
+            </button>
+          </div>
+        </div>
 
         {/* Tabs - Instagram Style */}
-        <div className="relative mb-2">
+        <div className="relative mb-2 mt-8 border-t border-border">
           <div 
             ref={scrollRef}
             className="flex justify-center gap-8 overflow-x-auto scrollbar-hide no-scrollbar"
@@ -353,7 +362,7 @@ export default function ProfilePage() {
                 onClick={() => setActiveTab(genre)}
                 className={`py-4 text-xs font-bold whitespace-nowrap uppercase tracking-widest transition-all border-t-2 ${
                   activeTab === genre 
-                    ? 'border-foreground text-foreground' 
+                    ? 'border-foreground text-foreground -mt-[1px]' 
                     : 'border-transparent text-muted hover:text-foreground'
                 }`}
               >
