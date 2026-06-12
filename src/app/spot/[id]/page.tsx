@@ -8,7 +8,8 @@ import Image from 'next/image'
 import { motion, AnimatePresence, Variants } from 'framer-motion'
 import {
   ArrowLeft, MapPin, Clock, Zap, Star, Camera, Loader2,
-  Heart, MessageSquare, Navigation, Send, ChevronLeft, ChevronRight, Check
+  Heart, MessageSquare, Navigation, Send, ChevronLeft, ChevronRight, Check,
+  Route, NotepadText
 } from 'lucide-react'
 import { Database } from '@/types/database'
 
@@ -478,12 +479,12 @@ export default function SpotDetailPage() {
             <div className="relative p-6 rounded-[24px] overflow-hidden group border bg-surface shadow-md" style={{ borderColor: diffStyle.border }}>
               <div className="absolute inset-0 -z-10" style={{ background: diffStyle.bg }} />
               <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 group-hover:opacity-10 transition-all duration-500">
-                <Zap className={`w-20 h-20 ${diffStyle.text}`} />
+                <Route className={`w-20 h-20 ${diffStyle.text}`} />
               </div>
               
               <div className="flex items-center gap-3 mb-4">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center border bg-background/50 ${diffStyle.border}`}>
-                  <Zap className={`w-5 h-5 ${diffStyle.text}`} />
+                  <Route className={`w-5 h-5 ${diffStyle.text}`} />
                 </div>
                 <h4 className="text-xs font-mono uppercase tracking-widest text-muted font-bold">Aksesibilitas</h4>
               </div>
@@ -503,7 +504,7 @@ export default function SpotDetailPage() {
           {spot.tips_trik && (
             <div className="p-6 bg-surface-alt rounded-[24px] border border-border">
               <div className="flex items-center gap-3 mb-3">
-                <Zap className="w-5 h-5 text-amber-primary" />
+                <NotepadText className="w-5 h-5 text-amber-primary" />
                 <h3 className="font-display font-bold text-xl">Tips & Trik</h3>
               </div>
               <p className="text-foreground/80 leading-relaxed">{spot.tips_trik}</p>
