@@ -12,7 +12,8 @@ import {
   ChevronRight, 
   Settings, 
   Image as ImageIcon,
-  HardDrive
+  HardDrive,
+  MapPin
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AlertCircle } from 'lucide-react'
@@ -26,6 +27,7 @@ export default function OnboardingPage() {
     username: '',
     full_name: '',
     gear: '',
+    location: '',
   })
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
@@ -120,6 +122,9 @@ export default function OnboardingPage() {
       if (formData.gear && formData.gear.trim() !== '') {
         payload.gear = formData.gear
       }
+      if (formData.location && formData.location.trim() !== '') {
+        payload.location = formData.location
+      }
       if (final_avatar_url) {
         payload.avatar_url = final_avatar_url
       }
@@ -153,7 +158,7 @@ export default function OnboardingPage() {
   const steps = [
     { title: 'Identitas', desc: 'Siapa Anda di balik lensa?' },
     { title: 'Visual', desc: 'Tunjukkan persona fotografimu.' },
-    { title: 'Gear', desc: 'Apa senjata utamamu?' },
+    { title: 'Gear & Base', desc: 'Senjata utama dan markas hunting-mu.' },
   ]
 
   return (
@@ -253,6 +258,20 @@ export default function OnboardingPage() {
                 <div className="space-y-8">
                   <div className="space-y-4">
                     <div className="space-y-2">
+                      <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted">Base Camp (Kota/Daerah)</label>
+                      <div className="relative group">
+                        <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-amber-primary" />
+                        <input 
+                          type="text" 
+                          placeholder="Denpasar, Bali"
+                          className="input-base pl-14 pr-5 py-4 rounded-2xl"
+                          value={formData.location}
+                          onChange={(e) => setFormData({...formData, location: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
                       <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted">Gear Utama (Kamera/Lensa)</label>
                       <div className="relative group">
                         <HardDrive className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-amber-primary" />
@@ -265,8 +284,6 @@ export default function OnboardingPage() {
                         />
                       </div>
                     </div>
-
-
                   </div>
                 </div>
               )}
