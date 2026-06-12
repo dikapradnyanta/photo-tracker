@@ -32,8 +32,8 @@ const createCustomIcon = (url: string, spotData: SpotWithPhoto) => {
   const icon = L.divIcon({
     className: 'custom-marker',
     html: `
-      <div class="relative w-12 h-12 rounded-lg border-2 border-[#E8692A] overflow-hidden shadow-lg transform transition-transform hover:scale-110">
-        <img src="${url}" class="w-full h-full object-fill" />
+      <div class="relative w-12 h-12 rounded-lg border-2 border-[#E8692A] overflow-hidden shadow-lg transform transition-transform hover:scale-110 bg-surface-alt">
+        <img src="${url}" class="w-full h-full" style="width: 100%; height: 100%; min-width: 100%; min-height: 100%; object-fit: cover; display: block;" />
       </div>
     `,
     iconSize: [48, 48],
@@ -57,8 +57,8 @@ const createClusterCustomIcon = function (cluster: any) {
   return L.divIcon({
     className: 'custom-cluster-marker',
     html: `
-      <div class="relative w-16 h-16 rounded-2xl border-4 border-background shadow-2xl overflow-hidden transform transition-all hover:scale-105 hover:shadow-amber-primary/30 group">
-        <img src="${coverUrl}" class="w-full h-full object-fill" />
+      <div class="relative w-16 h-16 rounded-2xl border-4 border-background shadow-2xl overflow-hidden transform transition-all hover:scale-105 hover:shadow-amber-primary/30 group bg-surface-alt">
+        <img src="${coverUrl}" class="w-full h-full" style="width: 100%; height: 100%; min-width: 100%; min-height: 100%; object-fit: cover; display: block;" />
         <div class="absolute inset-0 bg-black/40 group-hover:bg-black/10 transition-colors"></div>
         <div class="absolute top-1 right-1 bg-amber-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md">
           ${count}
