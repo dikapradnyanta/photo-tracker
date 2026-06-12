@@ -34,9 +34,11 @@ export default function OnboardingPage() {
   
   const [locationSuggestions, setLocationSuggestions] = useState<any[]>([])
   const [showLocSuggestions, setShowLocSuggestions] = useState(false)
+  const [isLocLoading, setIsLocLoading] = useState(false)
   
   const [gearSuggestions, setGearSuggestions] = useState<string[]>([])
   const [showGearSuggestions, setShowGearSuggestions] = useState(false)
+  const [isGearLoading, setIsGearLoading] = useState(false)
 
   const router = useRouter()
 
@@ -74,12 +76,15 @@ export default function OnboardingPage() {
         setLocationSuggestions([])
         return
       }
+      setIsLocLoading(true)
       try {
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(formData.location)}&countrycodes=id&limit=4`)
         const data = await res.json()
         setLocationSuggestions(data)
       } catch (e) {
         console.error(e)
+      } finally {
+        setIsLocLoading(false)
       }
     }
     const timeout = setTimeout(fetchLocations, 500)
@@ -93,6 +98,7 @@ export default function OnboardingPage() {
         setGearSuggestions([])
         return
       }
+      setIsGearLoading(true)
       try {
         const { data } = await supabase
           .from('users')
@@ -109,7 +115,10 @@ export default function OnboardingPage() {
             setGearSuggestions(uniqueGear.slice(0, 4))
           }
         }
-      } catch (e) {}
+      } catch (e) {
+      } finally {
+        setIsGearLoading(false)
+      }
     }
     const timeout = setTimeout(fetchGear, 400)
     return () => clearTimeout(timeout)
@@ -319,12 +328,17 @@ export default function OnboardingPage() {
                         <input 
                           type="text" 
                           placeholder="Denpasar, Bali"
-                          className="input-base pl-14 pr-5 py-4 rounded-2xl w-full"
+                          className="input-base pl-14 pr-10 py-4 rounded-2xl w-full"
                           value={formData.location}
                           onChange={(e) => setFormData({...formData, location: e.target.value})}
                           onFocus={() => setShowLocSuggestions(true)}
                           onBlur={() => setTimeout(() => setShowLocSuggestions(false), 200)}
                         />
+                        {isLocLoading && (
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                            <Loader2 className="w-4 h-4 text-muted animate-spin" />
+                          </div>
+                        )}
                         {showLocSuggestions && locationSuggestions.length > 0 && (
                           <div className="absolute top-full left-0 right-0 mt-2 bg-surface-alt border border-border rounded-xl overflow-hidden z-50 shadow-xl">
                             {locationSuggestions.map((loc, i) => (
@@ -353,12 +367,17 @@ export default function OnboardingPage() {
                         <input 
                           type="text" 
                           placeholder="Sony A7IV + 35mm f/1.4"
-                          className="input-base pl-14 pr-5 py-4 rounded-2xl w-full"
+                          className="input-base pl-14 pr-10 py-4 rounded-2xl w-full"
                           value={formData.gear}
                           onChange={(e) => setFormData({...formData, gear: e.target.value})}
                           onFocus={() => setShowGearSuggestions(true)}
                           onBlur={() => setTimeout(() => setShowGearSuggestions(false), 200)}
                         />
+                        {isGearLoading && (
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                            <Loader2 className="w-4 h-4 text-muted animate-spin" />
+                          </div>
+                        )}
                         {showGearSuggestions && gearSuggestions.length > 0 && (
                           <div className="absolute top-full left-0 right-0 mt-2 bg-surface-alt border border-border rounded-xl overflow-hidden z-50 shadow-xl">
                             {gearSuggestions.map((gear, i) => (
