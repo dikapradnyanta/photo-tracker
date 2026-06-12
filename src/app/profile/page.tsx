@@ -309,12 +309,12 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* Portfolio Section & Actions */}
       <div className="max-w-5xl mx-auto px-6">
-        {/* Gallery Section */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex gap-2">
-            <button className="p-2 bg-amber-primary text-white rounded-lg shadow-lg"><Grid className="w-4 h-4" /></button>
-            <button className="p-2 bg-surface-alt border border-border rounded-lg text-muted"><ImageIcon className="w-4 h-4" /></button>
+          <div className="flex items-center gap-3">
+            <Grid className="w-4 h-4 text-amber-primary" />
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted">Portfolio</p>
           </div>
           
           <div className="flex items-center gap-3">
@@ -349,75 +349,67 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Tabs - Instagram Style */}
-        <div className="relative mb-2 mt-8 border-t border-border">
-          <div 
-            ref={scrollRef}
-            className="flex justify-center gap-8 overflow-x-auto scrollbar-hide no-scrollbar"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {genres.map((genre) => (
-              <button
-                key={genre}
-                onClick={() => setActiveTab(genre)}
-                className={`py-4 text-xs font-bold whitespace-nowrap uppercase tracking-widest transition-all border-t-2 ${
-                  activeTab === genre 
-                    ? 'border-foreground text-foreground -mt-[1px]' 
-                    : 'border-transparent text-muted hover:text-foreground'
-                }`}
+        {photos.length === 0 ? (
+          <div className="py-32 text-center border-2 border-dashed border-border rounded-[40px]">
+            <Camera className="w-12 h-12 mx-auto mb-4 opacity-10" />
+            <p className="text-muted italic text-sm">Belum ada foto yang diunggah.</p>
+            <Link href="/add-spot" className="inline-block mt-8 px-8 py-4 bg-foreground text-background rounded-none text-xs font-mono uppercase tracking-[0.2em] font-bold hover:bg-amber-primary hover:text-white transition-all">
+              Tambah Spot Pertamamu
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {photos.map((photo, i) => (
+              <motion.div
+                key={photo.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.03 }}
+                className="group relative aspect-square rounded-[24px] overflow-hidden panel hover:border-amber-primary transition-all cursor-pointer"
               >
-                {genre === 'Semua' ? (
-                  <span className="flex items-center gap-2"><Grid className="w-3 h-3" /> POSTINGAN</span>
-                ) : (
-                  <span>{genre}</span>
-                )}
-              </button>
+                <img
+                  src={photo.photo_url}
+                  alt={photo.caption || ''}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
+                  <p className="text-[10px] font-mono text-amber-primary uppercase font-bold mb-1">
+                    {photo.spots?.name}
+                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <Zap className="w-3 h-3 text-amber-primary" />
+                    <span className="text-[8px] text-white/60 uppercase line-clamp-1">
+                      {photo.spots?.genre?.[0] || 'Photo'}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        )}
 
-        {/* Dynamic Gallery Grid - Instagram Square Style */}
-        <div className="grid grid-cols-3 gap-1 md:gap-4 mb-12">
-          {filteredPhotos.length > 0 ? (
-            filteredPhotos.map((photo) => {
-              return (
-                <motion.div 
-                  layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  key={photo.id} 
-                  className="group relative overflow-hidden bg-surface-alt aspect-square cursor-pointer"
-                >
-                  <Image
-                    src={photo.photo_url}
-                    alt={photo.caption || ''}
-                    fill
-                    sizes="(max-width: 768px) 33vw, 25vw"
-                    placeholder="blur"
-                    blurDataURL={BLUR_URL}
-                    className="object-cover group-hover:opacity-75 transition-opacity duration-300"
-                  />
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center gap-2">
-                    <p className="text-white font-bold text-sm md:text-base px-2 text-center truncate w-full">{photo.spots?.name}</p>
-                    <div className="flex items-center gap-1.5">
-                      <Camera className="w-3 h-3 text-white" />
-                      <span className="text-[10px] text-white/90 uppercase tracking-widest">{photo.exif_camera || 'Manual'}</span>
-                    </div>
-                  </div>
-                </motion.div>
-              )
-            })
-          ) : (
-            <div className="col-span-full py-32 text-center border-y border-border">
-              <Camera className="w-12 h-12 mx-auto mb-6 text-muted/30" />
-              <p className="text-muted font-serif text-2xl italic">"Mulai Hunting Pertamamu"</p>
-              <Link href="/add-spot" className="inline-block mt-8 px-8 py-4 bg-foreground text-background rounded-none text-xs font-mono uppercase tracking-[0.2em] font-bold hover:bg-amber-primary hover:text-white transition-all">
-                Tambah Spot Pertamamu
-              </Link>
+        {/* Spots added by this user */}
+        {spots.length > 0 && (
+          <div className="mt-16">
+            <div className="flex items-center gap-3 mb-6">
+              <MapPin className="w-4 h-4 text-amber-primary" />
+              <p className="text-[10px] font-mono uppercase tracking-widest text-muted">Spot yang Ditambahkan</p>
             </div>
-          )}
-        </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {spots.slice(0, 6).map(spot => (
+                <Link key={spot.id} href={`/spot/${spot.id}`} className="flex items-center gap-4 p-4 panel rounded-2xl hover:border-amber-primary transition-all group">
+                  <div className="w-10 h-10 rounded-xl bg-amber-primary/10 flex items-center justify-center shrink-0">
+                    <MapPin className="w-5 h-5 text-amber-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm group-hover:text-amber-primary transition-colors truncate">{spot.name}</p>
+                    <p className="text-[10px] font-mono text-muted">{spot.genre?.join(' · ') || '—'}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Logout Action */}
         <div className="mt-20 flex justify-center">
