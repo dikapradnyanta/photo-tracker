@@ -31,6 +31,13 @@ export default function OnboardingPage() {
   })
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  
+  const [locationSuggestions, setLocationSuggestions] = useState<any[]>([])
+  const [showLocSuggestions, setShowLocSuggestions] = useState(false)
+  
+  const [gearSuggestions, setGearSuggestions] = useState<string[]>([])
+  const [showGearSuggestions, setShowGearSuggestions] = useState(false)
+
   const router = useRouter()
 
   useEffect(() => {
@@ -59,6 +66,54 @@ export default function OnboardingPage() {
       }
     })
   }, [router])
+
+  // Autocomplete for Location (Nominatim API)
+  useEffect(() => {
+    const fetchLocations = async () => {
+      if (formData.location.length < 3) {
+        setLocationSuggestions([])
+        return
+      }
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(formData.location)}&countrycodes=id&limit=4`)
+        const data = await res.json()
+        setLocationSuggestions(data)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    const timeout = setTimeout(fetchLocations, 500)
+    return () => clearTimeout(timeout)
+  }, [formData.location])
+
+  // Autocomplete for Gear (Supabase users table)
+  useEffect(() => {
+    const fetchGear = async () => {
+      if (formData.gear.length < 2) {
+        setGearSuggestions([])
+        return
+      }
+      try {
+        const { data } = await supabase
+          .from('users')
+          .select('gear')
+          .ilike('gear', `%${formData.gear}%`)
+          .limit(20)
+        
+        if (data) {
+          const uniqueGear = Array.from(new Set(data.map(d => d.gear).filter(Boolean))) as string[]
+          // Don't show if the only suggestion is exactly what we typed
+          if (uniqueGear.length === 1 && uniqueGear[0] === formData.gear) {
+            setGearSuggestions([])
+          } else {
+            setGearSuggestions(uniqueGear.slice(0, 4))
+          }
+        }
+      } catch (e) {}
+    }
+    const timeout = setTimeout(fetchGear, 400)
+    return () => clearTimeout(timeout)
+  }, [formData.gear])
 
   const handleNext = () => {
     if (step === 1) {
@@ -264,10 +319,32 @@ export default function OnboardingPage() {
                         <input 
                           type="text" 
                           placeholder="Denpasar, Bali"
-                          className="input-base pl-14 pr-5 py-4 rounded-2xl"
+                          className="input-base pl-14 pr-5 py-4 rounded-2xl w-full"
                           value={formData.location}
                           onChange={(e) => setFormData({...formData, location: e.target.value})}
+                          onFocus={() => setShowLocSuggestions(true)}
+                          onBlur={() => setTimeout(() => setShowLocSuggestions(false), 200)}
                         />
+                        {showLocSuggestions && locationSuggestions.length > 0 && (
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-surface-alt border border-border rounded-xl overflow-hidden z-50 shadow-xl">
+                            {locationSuggestions.map((loc, i) => (
+                              <div 
+                                key={i}
+                                className="px-4 py-3 text-sm hover:bg-amber-primary/10 hover:text-amber-primary cursor-pointer transition-colors border-b border-border/50 last:border-0"
+                                onClick={() => {
+                                  // Nominatim gives full address, let's take just the first 2-3 parts for brevity if it's too long
+                                  const parts = loc.display_name.split(', ')
+                                  const shortName = parts.length > 2 ? `${parts[0]}, ${parts[1]}` : loc.display_name
+                                  setFormData({...formData, location: shortName})
+                                  setShowLocSuggestions(false)
+                                }}
+                              >
+                                <p className="font-bold">{loc.name}</p>
+                                <p className="text-[10px] text-muted truncate">{loc.display_name}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -278,10 +355,28 @@ export default function OnboardingPage() {
                         <input 
                           type="text" 
                           placeholder="Sony A7IV + 35mm f/1.4"
-                          className="input-base pl-14 pr-5 py-4 rounded-2xl"
+                          className="input-base pl-14 pr-5 py-4 rounded-2xl w-full"
                           value={formData.gear}
                           onChange={(e) => setFormData({...formData, gear: e.target.value})}
+                          onFocus={() => setShowGearSuggestions(true)}
+                          onBlur={() => setTimeout(() => setShowGearSuggestions(false), 200)}
                         />
+                        {showGearSuggestions && gearSuggestions.length > 0 && (
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-surface-alt border border-border rounded-xl overflow-hidden z-50 shadow-xl">
+                            {gearSuggestions.map((gear, i) => (
+                              <div 
+                                key={i}
+                                className="px-4 py-3 text-sm hover:bg-amber-primary/10 hover:text-amber-primary cursor-pointer transition-colors border-b border-border/50 last:border-0"
+                                onClick={() => {
+                                  setFormData({...formData, gear: gear})
+                                  setShowGearSuggestions(false)
+                                }}
+                              >
+                                {gear}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
