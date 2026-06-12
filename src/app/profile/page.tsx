@@ -24,8 +24,11 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Database } from '@/types/database'
 import { motion, AnimatePresence } from 'framer-motion'
+
+const BLUR_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 
 type Profile = Database['public']['Tables']['users']['Row']
 type Spot = Database['public']['Tables']['spots']['Row']
@@ -281,7 +284,7 @@ export default function ProfilePage() {
             <div className="relative w-40 h-48 md:w-56 md:h-72 bg-surface border border-border shadow-2xl p-2 transform rotate-2 hover:rotate-0 transition-transform duration-500">
               <div className="w-full h-full bg-sand/20 overflow-hidden relative">
                 {profile.avatar_url ? (
-                  <img src={profile.avatar_url} alt={profile.username || ''} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
+                  <Image src={profile.avatar_url} alt={profile.username || ''} fill sizes="250px" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover grayscale hover:grayscale-0 transition-all duration-700" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center"><UserIcon className="w-16 h-16 opacity-30" /></div>
                 )}
@@ -389,10 +392,14 @@ export default function ProfilePage() {
                     'col-span-1 row-span-1 aspect-square'
                   }`}
                 >
-                  <img
+                  <Image
                     src={photo.photo_url}
                     alt={photo.caption || ''}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                    fill
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                    placeholder="blur"
+                    blurDataURL={BLUR_URL}
+                    className="object-cover group-hover:scale-105 transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 p-6 flex flex-col justify-end">
                     <p className="text-xs font-mono text-white uppercase tracking-[0.2em] font-bold mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">{photo.spots?.name}</p>

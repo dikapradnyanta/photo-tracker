@@ -41,6 +41,8 @@ const DIFFICULTY_STYLE: Record<string, { bg: string, text: string, border: strin
   hard: { bg: 'rgba(244, 63, 94, 0.08)', text: 'text-rose-500', border: 'border-rose-500/20' },
 }
 
+const BLUR_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+
 const stagger: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.1 } }
@@ -382,7 +384,7 @@ export default function SpotDetailPage() {
                   {/* Contributor Badge */}
                   <Link href={`/profile/${activePhotoObj.users?.username || ''}`} className="flex items-center gap-2 px-4 py-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-full shadow-xl hover:bg-black/60 transition-colors group">
                     {activePhotoObj.users?.avatar_url ? (
-                      <img src={activePhotoObj.users.avatar_url} alt="Avatar" className="w-5 h-5 rounded-full object-cover border border-white/20" />
+                      <Image src={activePhotoObj.users.avatar_url} alt="Avatar" width={20} height={20} placeholder="blur" blurDataURL={BLUR_URL} className="rounded-full object-cover border border-white/20" />
                     ) : (
                       <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center border border-white/20">
                         <Camera className="w-3 h-3 text-white/70" />
@@ -421,13 +423,13 @@ export default function SpotDetailPage() {
               <button
                 key={photo.id}
                 onClick={() => setActiveIndex(i)}
-                className={`relative shrink-0 w-20 h-14 md:w-24 md:h-16 rounded-xl overflow-hidden snap-center outline-none transition-all duration-200 ${
+                className={`relative shrink-0 w-32 h-24 md:w-48 md:h-32 rounded-xl overflow-hidden snap-center outline-none transition-all duration-200 ${
                   i === activeIndex 
                     ? 'ring-2 ring-amber-primary ring-offset-2 ring-offset-background opacity-100' 
                     : 'opacity-60 hover:opacity-100'
                 }`}
               >
-                <img src={photo.photo_url} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-cover" />
+                <Image src={photo.photo_url} alt={`Thumbnail ${i + 1}`} fill sizes="(max-width: 768px) 128px, 192px" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover" />
                 
                 {/* Number Overlay */}
                 <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/60 backdrop-blur-sm rounded text-[9px] font-mono font-bold text-white">
@@ -545,7 +547,7 @@ export default function SpotDetailPage() {
                     className="w-[300px] shrink-0 snap-center group block rounded-[24px] overflow-hidden bg-surface border border-border hover:border-amber-primary/40 transition-all shadow-md"
                   >
                     <div className="aspect-[4/3] relative overflow-hidden bg-surface-alt">
-                      <img src={ts.hero_photo_url || 'https://via.placeholder.com/400'} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                      <Image src={ts.hero_photo_url || 'https://via.placeholder.com/400'} alt="" fill sizes="300px" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                       
                       {/* Genre Chip */}

@@ -2,6 +2,7 @@
 
 import { Camera, Map as MapIcon, ArrowRight, Compass, Star, MapPin, Clock, Zap } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, Variants } from "framer-motion";
 
 const stagger: Variants = {
@@ -25,6 +26,8 @@ const DIFFICULTY_LABEL: Record<string, string> = {
   medium: 'Sedang',
   hard: 'Sulit',
 }
+
+const BLUR_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 
 export default function HomeClient({ spots, highlightUser, communityPhotos }: { spots: any[], highlightUser: any, communityPhotos: any[] }) {
   
@@ -99,17 +102,17 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           >
             {/* Medium Card (Left Bottom, -1deg) */}
             <div className="absolute left-0 bottom-4 w-64 h-80 rounded-[32px] overflow-hidden shadow-2xl -rotate-3 z-10 border-4 border-background group">
-              <img src={c2} alt="Hero 2" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+              <Image src={c2} alt="Hero 2" fill sizes="(max-width: 768px) 100vw, 33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
             </div>
             
             {/* Small Accent Card (Right Bottom, Amber Border) */}
             <div className="absolute right-4 bottom-0 w-48 h-48 rounded-[24px] overflow-hidden shadow-2xl rotate-6 z-30 border-4 border-amber-primary group">
-              <img src={c3} alt="Hero 3" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+              <Image src={c3} alt="Hero 3" fill sizes="(max-width: 768px) 100vw, 33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
             </div>
 
             {/* Large Card (Right Top, 2deg) */}
             <div className="absolute right-8 top-0 w-80 h-[400px] rounded-[32px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] rotate-2 z-20 border-4 border-background group">
-              <img src={c1} alt="Hero 1" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+              <Image src={c1} alt="Hero 1" fill sizes="(max-width: 768px) 100vw, 50vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
             </div>
           </motion.div>
         </div>
@@ -133,7 +136,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           {/* Top Row: 1 Large (7 cols) + 2 Medium (5 cols) */}
           {topSpots[0] && (
             <Link href={`/spot/${topSpots[0].id}`} className="col-span-12 md:col-span-7 group relative rounded-[32px] overflow-hidden aspect-[16/10] bg-surface-alt shadow-lg">
-              <img src={topSpots[0].spot_photos?.[0]?.photo_url || c1} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+              <Image src={topSpots[0].spot_photos?.[0]?.photo_url || c1} alt="" fill sizes="(max-width: 768px) 100vw, 60vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 p-8 w-full text-white">
                 <div className="flex gap-2 mb-3">
@@ -149,7 +152,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           <div className="col-span-12 md:col-span-5 grid grid-rows-2 gap-6">
             {topSpots[1] && (
               <Link href={`/spot/${topSpots[1].id}`} className="row-span-1 group relative rounded-[32px] overflow-hidden bg-surface-alt shadow-lg">
-                <img src={topSpots[1].spot_photos?.[0]?.photo_url || c2} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                <Image src={topSpots[1].spot_photos?.[0]?.photo_url || c2} alt="" fill sizes="(max-width: 768px) 100vw, 40vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6 w-full text-white">
                   <h3 className="text-2xl font-display font-bold mb-1 group-hover:text-amber-400 transition-colors line-clamp-1">{topSpots[1].name}</h3>
@@ -161,7 +164,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
             )}
             {topSpots[2] && (
               <Link href={`/spot/${topSpots[2].id}`} className="row-span-1 group relative rounded-[32px] overflow-hidden bg-surface-alt shadow-lg">
-                <img src={topSpots[2].spot_photos?.[0]?.photo_url || c3} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                <Image src={topSpots[2].spot_photos?.[0]?.photo_url || c3} alt="" fill sizes="(max-width: 768px) 100vw, 40vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6 w-full text-white">
                   <h3 className="text-2xl font-display font-bold mb-1 group-hover:text-amber-400 transition-colors line-clamp-1">{topSpots[2].name}</h3>
@@ -177,7 +180,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           {topSpots.slice(3, 6).map((spot, i) => (
             <Link href={`/spot/${spot.id}`} key={spot.id} className="col-span-12 sm:col-span-6 md:col-span-4 group relative flex flex-col">
               <div className="w-full aspect-[4/3] rounded-[24px] overflow-hidden mb-4 relative bg-surface-alt shadow-md">
-                <img src={spot.spot_photos?.[0]?.photo_url || [c4,c5,c1][i]} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                <Image src={spot.spot_photos?.[0]?.photo_url || [c4,c5,c1][i]} alt="" fill sizes="(max-width: 768px) 50vw, 33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
                 {/* Badges on top of small cards */}
                 <div className="absolute top-3 left-3 flex gap-1">
                   {spot.best_time && <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-white text-[9px] font-mono font-bold rounded uppercase">{BEST_TIME_LABEL[spot.best_time] || spot.best_time}</span>}
@@ -219,7 +222,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           <div className="col-span-2 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[0] && (
               <>
-                <img src={communityPhotos[0].photo_url} alt="" className="w-full aspect-video object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
+                <Image src={communityPhotos[0].photo_url} alt="" fill sizes="100vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
               </>
             )}
@@ -227,7 +230,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           <div className="col-span-1 aspect-square rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[1] && (
               <>
-                <img src={communityPhotos[1].photo_url} alt="" className="w-full h-full object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
+                <Image src={communityPhotos[1].photo_url} alt="" fill sizes="50vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
               </>
             )}
@@ -235,7 +238,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           <div className="col-span-1 aspect-square rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[2] && (
               <>
-                <img src={communityPhotos[2].photo_url} alt="" className="w-full h-full object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
+                <Image src={communityPhotos[2].photo_url} alt="" fill sizes="50vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
               </>
             )}
@@ -254,7 +257,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           <div className="col-span-4 row-span-2 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[0] && (
               <>
-                <img src={communityPhotos[0].photo_url} alt="" className="w-full h-full object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
+                <Image src={communityPhotos[0].photo_url} alt="" fill sizes="50vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-5">
                   <span className="font-mono text-[10px] uppercase text-white/80 tracking-widest">Foto komunitas</span>
@@ -267,7 +270,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           <div className="col-span-2 row-span-1 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[1] && (
               <>
-                <img src={communityPhotos[1].photo_url} alt="" className="w-full h-full object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
+                <Image src={communityPhotos[1].photo_url} alt="" fill sizes="33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
                   <span className="font-mono text-[10px] uppercase text-white/80 tracking-widest">Foto komunitas</span>
@@ -280,7 +283,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           <div className="col-span-2 row-span-1 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[2] && (
               <>
-                <img src={communityPhotos[2].photo_url} alt="" className="w-full h-full object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
+                <Image src={communityPhotos[2].photo_url} alt="" fill sizes="33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
                   <span className="font-mono text-[10px] uppercase text-white/80 tracking-widest">Foto komunitas</span>
@@ -293,7 +296,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           <div className="col-span-4 row-span-1 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[3] && (
               <>
-                <img src={communityPhotos[3].photo_url} alt="" className="w-full h-full object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
+                <Image src={communityPhotos[3].photo_url} alt="" fill sizes="50vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
                   <span className="font-mono text-[10px] uppercase text-white/80 tracking-widest">Foto komunitas</span>
@@ -306,7 +309,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           <div className="col-span-2 row-span-1 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[0] && (
               <>
-                <img src={communityPhotos[0].photo_url} alt="" className="w-full h-full object-cover opacity-60 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] group-hover:opacity-100 [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
+                <Image src={communityPhotos[0].photo_url} alt="" fill sizes="33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover opacity-60 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] group-hover:opacity-100 [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500" />
               </>
             )}
@@ -316,7 +319,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           <div className="col-span-3 row-span-1 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[1] && (
               <>
-                <img src={communityPhotos[1].photo_url} alt="" className="w-full h-full object-cover opacity-60 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] group-hover:opacity-100 [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
+                <Image src={communityPhotos[1].photo_url} alt="" fill sizes="33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover opacity-60 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] group-hover:opacity-100 [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500" />
               </>
             )}
@@ -326,7 +329,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           <div className="col-span-3 row-span-1 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[2] && (
               <>
-                <img src={communityPhotos[2].photo_url} alt="" className="w-full h-full object-cover opacity-60 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] group-hover:opacity-100 [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
+                <Image src={communityPhotos[2].photo_url} alt="" fill sizes="33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover opacity-60 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] group-hover:opacity-100 [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500" />
               </>
             )}
