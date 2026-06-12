@@ -105,8 +105,8 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
               <Image src={c2} alt="Hero 2" fill sizes="(max-width: 768px) 100vw, 33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
             </div>
             
-            {/* Small Accent Card (Right Bottom, Amber Border) */}
-            <div className="absolute right-4 bottom-0 w-48 h-48 rounded-[24px] overflow-hidden shadow-2xl rotate-6 z-30 border-4 border-amber-primary group">
+            {/* Small Accent Card (Right Bottom, matched Border) */}
+            <div className="absolute right-4 bottom-0 w-48 h-48 rounded-[24px] overflow-hidden shadow-2xl rotate-6 z-30 border-4 border-background group">
               <Image src={c3} alt="Hero 3" fill sizes="(max-width: 768px) 100vw, 33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
             </div>
 
