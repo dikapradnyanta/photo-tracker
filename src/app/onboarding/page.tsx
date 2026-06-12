@@ -240,9 +240,9 @@ export default function OnboardingPage() {
 
               {step === 2 && (
                 <div className="space-y-8 text-center">
-                  <div 
-                    className="relative w-40 h-40 mx-auto group cursor-pointer"
-                    onClick={() => document.getElementById('avatar-input')?.click()}
+                  <label 
+                    htmlFor="avatar-input"
+                    className="relative w-40 h-40 mx-auto group cursor-pointer block"
                   >
                     <div className="w-full h-full rounded-[48px] bg-surface-alt border-2 border-dashed border-border overflow-hidden flex items-center justify-center transition-all group-hover:border-amber-primary/50">
                       {avatarPreview ? (
@@ -258,7 +258,7 @@ export default function OnboardingPage() {
                       <PlusCircleIcon />
                     </div>
                     <input id="avatar-input" type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, 'avatar')} />
-                  </div>
+                  </label>
                   <p className="text-xs text-muted">Opsional — biarkan kosong jika ingin diatur nanti.</p>
                 </div>
               )}
@@ -282,9 +282,9 @@ export default function OnboardingPage() {
 
                     <div className="space-y-2 pt-4">
                       <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted">Foto Pertama (Karya Terbaikmu)</label>
-                      <div 
-                        className="relative h-40 rounded-3xl bg-surface-alt border-2 border-dashed border-border flex items-center justify-center cursor-pointer group hover:border-amber-primary/50 transition-all"
-                        onClick={() => document.getElementById('first-photo-input')?.click()}
+                      <label 
+                        htmlFor="first-photo-input"
+                        className="relative h-40 rounded-3xl bg-surface-alt border-2 border-dashed border-border flex items-center justify-center cursor-pointer group hover:border-amber-primary/50 transition-all block w-full"
                       >
                         {firstPhotoPreview ? (
                           <img src={firstPhotoPreview} alt="First photo preview" className="w-full h-full object-cover rounded-2xl" />
@@ -295,7 +295,7 @@ export default function OnboardingPage() {
                           </div>
                         )}
                         <input id="first-photo-input" type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, 'firstPhoto')} />
-                      </div>
+                      </label>
                     </div>
                   </div>
                 </div>
