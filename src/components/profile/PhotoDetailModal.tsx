@@ -44,10 +44,10 @@ export default function PhotoDetailModal({
       await supabase.from('spot_photos').update({ caption: editedCaption }).eq('id', photo.id)
       onUpdateCaption(photo.id, editedCaption)
       setIsEditingCaption(false)
-      showToast('Caption berhasil diperbarui!', 'success')
+      showToast('Deskripsi berhasil diperbarui!', 'success')
     } catch(e) {
       console.error(e)
-      showToast('Gagal memperbarui caption. Coba lagi.', 'error')
+      showToast('Gagal memperbarui deskripsi. Coba lagi.', 'error')
     } finally {
       setSaving(false)
     }
@@ -119,10 +119,10 @@ export default function PhotoDetailModal({
 
             <div className="h-px w-full bg-border" />
 
-            {/* Caption & Edit */}
+            {/* Deskripsi & Edit */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-muted">Caption</p>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-muted">Deskripsi</p>
                 <button 
                   onClick={() => {
                     setIsEditingCaption(!isEditingCaption)
@@ -141,7 +141,7 @@ export default function PhotoDetailModal({
                     value={editedCaption}
                     onChange={(e) => setEditedCaption(e.target.value)}
                     maxLength={280}
-                    placeholder="Tambahkan cerita tentang foto ini..."
+                    placeholder="Tambahkan deskripsi tentang foto ini..."
                   />
                   <div className="flex gap-2 justify-end">
                     <button onClick={() => setIsEditingCaption(false)} className="px-3 py-1.5 text-xs font-bold text-muted hover:text-foreground">Batal</button>
@@ -156,7 +156,7 @@ export default function PhotoDetailModal({
                 </div>
               ) : (
                 <p className="text-sm leading-relaxed italic text-foreground/90">
-                  {photo.caption ? `"${photo.caption}"` : <span className="text-muted/50">Tidak ada caption.</span>}
+                  {photo.caption ? `"${photo.caption}"` : <span className="text-muted/50">Tidak ada deskripsi.</span>}
                 </p>
               )}
             </div>

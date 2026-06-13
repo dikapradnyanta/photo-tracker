@@ -130,7 +130,7 @@ export default function AddSpotPage() {
         spot_id: existingSpot.id,
         user_id: user.id,
         photo_url: uploadedPhotoUrl,
-        caption: 'Added Photo',
+        caption: null,
       })
       if (photoHash) saveUploadedHash(user.id, photoHash)
       setShowMergeDialog(false)
@@ -162,7 +162,7 @@ export default function AddSpotPage() {
         spot_id: spotData.id,
         user_id: user.id,
         photo_url: uploadedPhotoUrl,
-        caption: 'Added Photo',
+        caption: null,
       })
       if (photoHash) saveUploadedHash(user.id, photoHash)
       setShowMergeDialog(false)
@@ -267,7 +267,7 @@ export default function AddSpotPage() {
         spot_id: spotData.id,
         user_id: user.id,
         photo_url: publicUrl,
-        caption: 'Added Photo',
+        caption: null,
       })
 
       if (photoError) throw photoError
