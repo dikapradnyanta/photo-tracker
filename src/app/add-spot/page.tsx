@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useToast } from '@/context/ToastContext'
 
 // Dynamic import for MiniMap to avoid SSR issues
 const MiniMap = dynamic(() => import('@/components/Map/MiniMap'), {
@@ -47,9 +48,9 @@ export default function AddSpotPage() {
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [existingSpot, setExistingSpot] = useState<any>(null)
   const [showMergeDialog, setShowMergeDialog] = useState(false)
-  const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState<string | null>(null)
   const router = useRouter()
+  const { showToast } = useToast()
 
   // ── Hitung SHA-256 fingerprint dari konten file ──────────────────────────
   const computeFileHash = async (file: File): Promise<string> => {
@@ -133,7 +134,7 @@ export default function AddSpotPage() {
       })
       if (photoHash) saveUploadedHash(user.id, photoHash)
       setShowMergeDialog(false)
-      setSuccessMsg('Foto berhasil ditambahkan ke spot yang ada! 🎉')
+      showToast('Foto berhasil ditambahkan ke spot yang ada! 🎉', 'success')
       setTimeout(() => router.push('/map'), 2000)
     } catch (err) {
       setUploadError('Gagal menambah foto ke spot tersebut.')
@@ -165,7 +166,7 @@ export default function AddSpotPage() {
       })
       if (photoHash) saveUploadedHash(user.id, photoHash)
       setShowMergeDialog(false)
-      setSuccessMsg('Spot baru berhasil dipublikasikan! 🎉')
+      showToast('Spot baru berhasil dipublikasikan! 🎉', 'success')
       setTimeout(() => router.push('/map'), 2000)
     } catch (err) {
       setUploadError('Gagal membuat spot baru.')
@@ -188,10 +189,10 @@ export default function AddSpotPage() {
     e.preventDefault()
     if (!user) { router.push('/login'); return }
     if (!formData.name.trim()) {
-      alert('Kasih nama spotnya dulu!'); return
+      showToast('Kasih nama spotnya dulu!', 'error'); return
     }
     if (!photoFile) {
-      alert('Upload satu foto dulu!'); return
+      showToast('Upload satu foto dulu!', 'error'); return
     }
     // latitude & longitude sudah otomatis terisi dari crosshair peta
 
@@ -275,7 +276,7 @@ export default function AddSpotPage() {
         saveUploadedHash(user.id, photoHash)
       }
 
-      setSuccessMsg('Spot berhasil dipublikasikan! 🎉')
+      showToast('Spot berhasil dipublikasikan! 🎉', 'success')
       setTimeout(() => router.push('/map'), 2000)
     } catch (error: any) {
       console.error('Error adding spot:', error)
@@ -564,16 +565,6 @@ export default function AddSpotPage() {
 
         </form>
       </div>
-
-      {successMsg && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[5000] px-8 py-4 bg-foreground text-background rounded-2xl font-bold shadow-2xl"
-        >
-          {successMsg}
-        </motion.div>
-      )}
 
       <AnimatePresence>
         {showMergeDialog && (

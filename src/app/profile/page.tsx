@@ -33,10 +33,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Database } from '@/types/database'
 import { motion, AnimatePresence } from 'framer-motion'
-import ToastNotification, { ToastType } from './components/ToastNotification'
-import EditProfileModal from './components/EditProfileModal'
-import PhotoDetailModal from './components/PhotoDetailModal'
-import DeleteConfirmModal from './components/DeleteConfirmModal'
+import { useToast } from '@/context/ToastContext'
+import EditProfileModal from '@/components/profile/EditProfileModal'
+import PhotoDetailModal from '@/components/profile/PhotoDetailModal'
+import DeleteConfirmModal from '@/components/profile/DeleteConfirmModal'
 
 const BLUR_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 
@@ -64,13 +64,8 @@ export default function ProfilePage() {
   // Modal & Toast state
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
   const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null)
-  const [toastMessage, setToastMessage] = useState('')
-  const [toastType, setToastType] = useState<ToastType>(null)
 
-  const showToast = (message: string, type: ToastType) => {
-    setToastMessage(message)
-    setToastType(type)
-  }
+  const { showToast } = useToast()
   
   const scrollRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -530,8 +525,6 @@ export default function ProfilePage() {
           showToast('Foto berhasil dihapus.', 'success')
         }}
       />
-
-      <ToastNotification message={toastMessage} type={toastType} onClose={() => setToastType(null)} />
     </main>
   )
 }

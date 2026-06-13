@@ -204,7 +204,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
             <h2 className="text-2xl font-display font-bold text-foreground">Karya komunitas</h2>
             <p className="text-sm text-muted italic mt-1">Foto terbaru dari fotografer PhotoTracker</p>
           </div>
-          <Link href="/spots" className="group flex items-center gap-1.5 text-sm font-bold text-muted hover:text-amber-primary transition-colors shrink-0">
+          <Link href="/community" className="group flex items-center gap-1.5 text-sm font-bold text-muted hover:text-amber-primary transition-colors shrink-0">
             Lihat semua
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>

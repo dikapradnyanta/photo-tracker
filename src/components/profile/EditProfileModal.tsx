@@ -4,7 +4,7 @@ import { X, Camera, PenTool, MapPin, HardDrive, Info, Save, Loader2, User as Use
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
 import { Database } from '@/types/database'
-import { ToastType } from './ToastNotification'
+import { ToastType } from '@/components/ui/ToastNotification'
 
 type Profile = Database['public']['Tables']['users']['Row']
 

@@ -148,7 +148,7 @@ export default function PublicProfilePage() {
           <UserIcon className="w-20 h-20 mx-auto mb-6 opacity-10" />
           <h1 className="text-4xl font-display font-bold mb-3">Profil Tidak Ditemukan</h1>
           <p className="text-muted mb-8">Username <span className="font-mono text-amber-primary">@{decodeURIComponent(username)}</span> tidak ada di PhotoTracker.</p>
-          <Link href="/spots" className="btn-primary inline-flex items-center gap-2">
+          <Link href="/map" className="btn-primary inline-flex items-center gap-2">
             Jelajahi Spot
           </Link>
         </div>

@@ -4,7 +4,7 @@ import { X, ChevronLeft, ChevronRight, Navigation, Clock, PenTool, Heart, Loader
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/database'
-import { ToastType } from './ToastNotification'
+import { ToastType } from '@/components/ui/ToastNotification'
 
 type SpotPhoto = Database['public']['Tables']['spot_photos']['Row'] & {
   spots: { id: string; name: string; genre: string[] | null; best_time: string | null; difficulty: string | null } | null

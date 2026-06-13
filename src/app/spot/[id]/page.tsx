@@ -12,6 +12,7 @@ import {
   Route, NotepadText
 } from 'lucide-react'
 import { Database } from '@/types/database'
+import { useToast } from '@/context/ToastContext'
 
 type Spot = Database['public']['Tables']['spots']['Row']
 type SpotPhoto = Database['public']['Tables']['spot_photos']['Row'] & {
@@ -57,6 +58,7 @@ export default function SpotDetailPage() {
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
+  const { showToast } = useToast()
 
   const [spot, setSpot] = useState<Spot | null>(null)
   const [photos, setPhotos] = useState<SpotPhoto[]>([])
@@ -175,7 +177,7 @@ export default function SpotDetailPage() {
   }, [id, router])
 
   const handleToggleLike = async (photoId: string, currentlyLiked: boolean) => {
-    if (!currentUser) { alert('Silakan login untuk memberikan like!'); return router.push('/login') }
+    if (!currentUser) { showToast('Silakan login untuk memberikan like!', 'error'); return router.push('/login') }
     setPhotos(prev => {
       const updated = prev.map(p =>
         p.id === photoId ? { ...p, hasLiked: !currentlyLiked, likesCount: currentlyLiked ? p.likesCount - 1 : p.likesCount + 1 } : p
@@ -206,7 +208,7 @@ export default function SpotDetailPage() {
       setReviewRating(0)
       setReviewComment('')
     } catch (err: any) {
-      alert(`Gagal submit review: ${err.message}`)
+      showToast(`Gagal submit review: ${err.message}`, 'error')
     } finally {
       setSubmittingReview(false)
     }
@@ -251,7 +253,7 @@ export default function SpotDetailPage() {
 
       if (dbError) throw dbError
 
-      alert('Foto berhasil ditambahkan!')
+      showToast('Foto berhasil ditambahkan!', 'success')
       setIsAddingPhoto(false)
       setNewPhotoFile(null)
       setNewPhotoPreview(null)
@@ -273,7 +275,7 @@ export default function SpotDetailPage() {
         setPhotos(formatted)
       }
     } catch (err: any) {
-      alert(`Gagal upload foto: ${err.message}`)
+      showToast(`Gagal upload foto: ${err.message}`, 'error')
     } finally {
       setIsUploadingPhoto(false)
     }
