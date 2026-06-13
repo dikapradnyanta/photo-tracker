@@ -460,40 +460,29 @@ export default function SpotDetailPage() {
           
           {/* Info Bento Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="relative p-6 rounded-[24px] overflow-hidden group border border-border bg-surface shadow-md">
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent -z-10" />
-              <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 group-hover:opacity-10 transition-all duration-500">
-                <Clock className="w-20 h-20 text-amber-500" />
+            {/* Waktu Terbaik */}
+            <div className="group p-6 rounded-[24px] border border-border bg-surface hover:border-foreground/20 transition-all duration-300 flex flex-col justify-between min-h-[140px]">
+              <div className="flex items-center gap-2.5 mb-6">
+                <Clock className="w-4 h-4 text-muted group-hover:text-foreground transition-colors" />
+                <h4 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted font-bold">Waktu Terbaik</h4>
               </div>
-              
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                  <Clock className="w-5 h-5 text-amber-500" />
-                </div>
-                <h4 className="text-xs font-mono uppercase tracking-widest text-muted font-bold">Waktu Terbaik</h4>
-              </div>
-              <div className="w-full h-px bg-border/50 mb-4" />
-              <p className="text-2xl font-display font-bold text-foreground">
+              <p className="text-3xl font-display font-medium text-foreground tracking-tight">
                 {BEST_TIME_LABEL[spot.best_time || ''] || spot.best_time || '-'}
               </p>
             </div>
             
-            <div className="relative p-6 rounded-[24px] overflow-hidden group border border-border bg-surface shadow-md">
-              <div className="absolute inset-0 -z-10" style={{ background: diffStyle.bg }} />
-              <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 group-hover:opacity-10 transition-all duration-500">
-                <Route className={`w-20 h-20 ${diffStyle.text}`} />
+            {/* Aksesibilitas */}
+            <div className="group p-6 rounded-[24px] border border-border bg-surface hover:border-foreground/20 transition-all duration-300 flex flex-col justify-between min-h-[140px]">
+              <div className="flex items-center gap-2.5 mb-6">
+                <Route className="w-4 h-4 text-muted group-hover:text-foreground transition-colors" />
+                <h4 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted font-bold">Aksesibilitas</h4>
               </div>
-              
-              <div className="flex items-center gap-3 mb-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center border bg-background/50 ${diffStyle.border}`}>
-                  <Route className={`w-5 h-5 ${diffStyle.text}`} />
-                </div>
-                <h4 className="text-xs font-mono uppercase tracking-widest text-muted font-bold">Aksesibilitas</h4>
+              <div className="flex items-end gap-3">
+                <p className="text-3xl font-display font-medium text-foreground tracking-tight">
+                  {DIFFICULTY_LABEL[spot.difficulty || 'easy']}
+                </p>
+                <div className={`w-2 h-2 rounded-full bg-current ${diffStyle.text} mb-2.5`} />
               </div>
-              <div className="w-full h-px bg-border/50 mb-4" />
-              <p className="text-2xl font-display font-bold text-foreground">
-                {DIFFICULTY_LABEL[spot.difficulty || 'easy']}
-              </p>
             </div>
           </div>
 
@@ -504,12 +493,12 @@ export default function SpotDetailPage() {
           </article>
 
           {spot.tips_trik && (
-            <div className="p-6 bg-surface-alt rounded-[24px] border border-border">
-              <div className="flex items-center gap-3 mb-3">
-                <NotepadText className="w-5 h-5 text-amber-primary" />
-                <h3 className="font-display font-bold text-xl">Tips & Trik</h3>
+            <div className="group p-8 rounded-[24px] border border-border bg-surface hover:border-foreground/20 transition-all duration-300">
+              <div className="flex items-center gap-2.5 mb-5">
+                <NotepadText className="w-4 h-4 text-muted group-hover:text-foreground transition-colors" />
+                <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted font-bold">Tips & Trik</h3>
               </div>
-              <p className="text-foreground/80 leading-relaxed">{spot.tips_trik}</p>
+              <p className="text-foreground/90 leading-relaxed text-lg">{spot.tips_trik}</p>
             </div>
           )}
 
