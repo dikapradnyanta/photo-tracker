@@ -14,6 +14,7 @@ import {
   Loader2,
   Zap,
   Grid,
+  Image as ImageIcon,
   Share2,
   Check,
   X,
@@ -44,6 +45,9 @@ export default function PublicProfilePage() {
   const [notFound, setNotFound] = useState(false)
   const [copied, setCopied] = useState(false)
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
+  const [activeTab, setActiveTab] = useState('Semua')
+  const [genres, setGenres] = useState<string[]>(['Semua'])
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   useEffect(() => {
     if (!username) return
@@ -105,7 +109,15 @@ export default function PublicProfilePage() {
         .select('*, spots(id, name, genre, best_time, difficulty), photo_likes(user_id)')
         .eq('user_id', profileData.id)
         .order('created_at', { ascending: false })
-      setPhotos((photosData as SpotPhoto[]) || [])
+      const fetchedPhotos = (photosData as SpotPhoto[]) || []
+      setPhotos(fetchedPhotos)
+
+      // Extract unique genres
+      const uniqueGenres = new Set(['Semua'])
+      fetchedPhotos.forEach(p => {
+        p.spots?.genre?.forEach(g => uniqueGenres.add(g))
+      })
+      setGenres(Array.from(uniqueGenres))
 
     } catch (err) {
       console.error(err)
@@ -116,6 +128,10 @@ export default function PublicProfilePage() {
   }
 
   const userLevel = spots.length >= 20 ? 'Pro' : spots.length >= 5 ? 'Enthusiast' : 'Pemula'
+
+  const filteredPhotos = activeTab === 'Semua' 
+    ? photos 
+    : photos.filter(p => p.spots?.genre?.includes(activeTab))
 
   if (loading) {
     return (
@@ -311,44 +327,86 @@ export default function PublicProfilePage() {
         <div className="absolute top-0 right-0 w-1/3 h-full bg-amber-primary/[0.03] blur-[100px] -z-10" />
       </div>
 
-      {/* Photo Grid */}
+      {/* Portfolio Section & Actions */}
       <div className="max-w-5xl mx-auto px-6">
-        <div className="flex items-center gap-3 mb-6">
-          <Grid className="w-4 h-4 text-amber-primary" />
-          <p className="text-[10px] font-mono uppercase tracking-widest text-muted">Portfolio</p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+            {genres.map(genre => (
+              <button
+                key={genre}
+                onClick={() => setActiveTab(genre)}
+                className={`px-4 py-2 rounded-full text-[10px] font-mono uppercase tracking-widest transition-all whitespace-nowrap ${
+                  activeTab === genre 
+                    ? 'bg-amber-primary text-white shadow-md shadow-amber-primary/20' 
+                    : 'bg-surface-alt border border-border text-muted hover:border-amber-primary/40'
+                }`}
+              >
+                {genre === 'Semua' ? 'Semua Foto' : genre}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <button 
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-amber-primary text-white shadow-lg shadow-amber-primary/20' : 'bg-surface-alt border border-border text-muted hover:border-amber-primary/40'}`}
+            >
+              <Grid className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-amber-primary text-white shadow-lg shadow-amber-primary/20' : 'bg-surface-alt border border-border text-muted hover:border-amber-primary/40'}`}
+            >
+              <ImageIcon className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {photos.length === 0 ? (
+        {filteredPhotos.length === 0 ? (
           <div className="py-32 text-center border-2 border-dashed border-border rounded-[40px]">
             <Camera className="w-12 h-12 mx-auto mb-4 opacity-10" />
             <p className="text-muted italic text-sm">Belum ada foto yang diunggah.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {photos.map((photo, i) => (
+          <div className={viewMode === 'grid' ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" : "flex flex-col gap-8 max-w-2xl mx-auto"}>
+            {filteredPhotos.map((photo, i) => (
               <motion.div
                 key={photo.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.03 }}
-                onClick={() => setSelectedPhotoIndex(i)}
-                className="group relative aspect-square rounded-[24px] overflow-hidden panel hover:border-amber-primary transition-all cursor-pointer"
+                onClick={() => setSelectedPhotoIndex(photos.findIndex(p => p.id === photo.id))}
+                className={`group relative overflow-hidden panel hover:border-amber-primary transition-all cursor-pointer ${viewMode === 'grid' ? 'aspect-square rounded-[24px]' : 'w-full rounded-[32px]'}`}
               >
-                <img
-                  src={photo.photo_url}
-                  alt={photo.caption || ''}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                />
+                {viewMode === 'list' ? (
+                  <div className="relative w-full" style={{ paddingBottom: '120%' }}>
+                    <img
+                      src={photo.photo_url}
+                      alt={photo.caption || ''}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  </div>
+                ) : (
+                  <img
+                    src={photo.photo_url}
+                    alt={photo.caption || ''}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
-                  <p className="text-[10px] font-mono text-amber-primary uppercase font-bold mb-1">
+                  <p className={`${viewMode === 'list' ? 'text-lg' : 'text-[10px]'} font-mono text-amber-primary uppercase font-bold mb-1`}>
                     {photo.spots?.name}
                   </p>
                   <div className="flex items-center gap-1.5">
-                    <Zap className="w-3 h-3 text-amber-primary" />
-                    <span className="text-[8px] text-white/60 uppercase line-clamp-1">
+                    <Zap className={`${viewMode === 'list' ? 'w-4 h-4' : 'w-3 h-3'} text-amber-primary`} />
+                    <span className={`${viewMode === 'list' ? 'text-xs' : 'text-[8px]'} text-white/60 uppercase line-clamp-1`}>
                       {photo.spots?.genre?.[0] || 'Photo'}
                     </span>
                   </div>
+                  {viewMode === 'list' && photo.caption && (
+                    <p className="mt-4 text-sm text-white/90 italic font-serif leading-relaxed">
+                      "{photo.caption}"
+                    </p>
+                  )}
                 </div>
               </motion.div>
             ))}

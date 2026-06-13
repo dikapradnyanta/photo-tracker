@@ -372,46 +372,57 @@ export default function ProfilePage() {
 
       {/* Portfolio Section & Actions */}
       <div className="max-w-5xl mx-auto px-6">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 pr-4 border-r border-border">
-              <Grid className="w-4 h-4 text-amber-primary" />
-              <p className="text-[10px] font-mono uppercase tracking-widest text-muted">Semua Foto</p>
-            </div>
-            <div className="flex gap-2">
-              <button 
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-amber-primary text-white shadow-lg shadow-amber-primary/20' : 'bg-surface-alt border border-border text-muted hover:border-amber-primary/40'}`}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+            {genres.map(genre => (
+              <button
+                key={genre}
+                onClick={() => setActiveTab(genre)}
+                className={`px-4 py-2 rounded-full text-[10px] font-mono uppercase tracking-widest transition-all whitespace-nowrap ${
+                  activeTab === genre 
+                    ? 'bg-amber-primary text-white shadow-md shadow-amber-primary/20' 
+                    : 'bg-surface-alt border border-border text-muted hover:border-amber-primary/40'
+                }`}
               >
-                <Grid className="w-4 h-4" />
+                {genre === 'Semua' ? 'Semua Foto' : genre}
               </button>
-              <button 
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-amber-primary text-white shadow-lg shadow-amber-primary/20' : 'bg-surface-alt border border-border text-muted hover:border-amber-primary/40'}`}
-              >
-                <ImageIcon className="w-4 h-4" />
-              </button>
-            </div>
+            ))}
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <button 
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-amber-primary text-white shadow-lg shadow-amber-primary/20' : 'bg-surface-alt border border-border text-muted hover:border-amber-primary/40'}`}
+            >
+              <Grid className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-amber-primary text-white shadow-lg shadow-amber-primary/20' : 'bg-surface-alt border border-border text-muted hover:border-amber-primary/40'}`}
+            >
+              <ImageIcon className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        {photos.length === 0 ? (
+        {filteredPhotos.length === 0 ? (
           <div className="py-32 text-center border-2 border-dashed border-border rounded-[40px]">
             <Camera className="w-12 h-12 mx-auto mb-4 opacity-10" />
             <p className="text-muted italic text-sm">Belum ada foto yang diunggah.</p>
-            <Link href="/add-spot" className="inline-block mt-8 px-8 py-4 bg-foreground text-background rounded-none text-xs font-mono uppercase tracking-[0.2em] font-bold hover:bg-amber-primary hover:text-white transition-all">
-              Tambah Spot Pertamamu
-            </Link>
+            {activeTab === 'Semua' && (
+              <Link href="/add-spot" className="inline-block mt-8 px-8 py-4 bg-foreground text-background rounded-none text-xs font-mono uppercase tracking-[0.2em] font-bold hover:bg-amber-primary hover:text-white transition-all">
+                Tambah Spot Pertamamu
+              </Link>
+            )}
           </div>
         ) : (
           <div className={viewMode === 'grid' ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" : "flex flex-col gap-8 max-w-2xl mx-auto"}>
-            {photos.map((photo, i) => (
+            {filteredPhotos.map((photo, i) => (
               <motion.div
                 key={photo.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.03 }}
-                onClick={() => setSelectedPhotoIndex(i)}
+                onClick={() => setSelectedPhotoIndex(photos.findIndex(p => p.id === photo.id))}
                 className={`group relative overflow-hidden panel hover:border-amber-primary transition-all cursor-pointer ${viewMode === 'grid' ? 'aspect-square rounded-[24px]' : 'w-full rounded-[32px]'}`}
               >
                 {viewMode === 'list' ? (

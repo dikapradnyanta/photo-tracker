@@ -211,15 +211,15 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
         </div>
         <div className="w-full h-px bg-border mb-8" />
 
-        {/* ── MOBILE BENTO (< md): 3 sel, maks 360px ── */}
+        {/* ── MOBILE BENTO (< md): 3 sel ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="grid md:hidden grid-cols-2 gap-3 h-[360px] overflow-hidden"
+          className="grid md:hidden grid-cols-2 gap-3"
         >
-          <div className="col-span-2 rounded-[20px] overflow-hidden relative group bg-surface-alt">
+          <div className="col-span-2 aspect-[16/9] rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[0] && (
               <>
                 <Image src={communityPhotos[0].photo_url} alt="" fill sizes="100vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
