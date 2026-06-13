@@ -9,7 +9,7 @@ export default async function Home() {
     .from('spots')
     .select(`
       *,
-      spot_photos (
+      spot_photos!inner (
         photo_url
       )
     `)

@@ -92,10 +92,12 @@ export default function PublicProfilePage() {
       // Fetch spots
       const { data: spotsData } = await supabase
         .from('spots')
-        .select('*')
+        .select('*, spot_photos(id)')
         .eq('added_by', profileData.id)
         .order('created_at', { ascending: false })
-      setSpots(spotsData || [])
+        
+      const activeSpots = (spotsData as any[] || []).filter(spot => spot.spot_photos && spot.spot_photos.length > 0)
+      setSpots(activeSpots)
 
       // Fetch portfolio photos
       const { data: photosData } = await supabase

@@ -33,6 +33,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Database } from '@/types/database'
 import { motion, AnimatePresence } from 'framer-motion'
+import ToastNotification, { ToastType } from './components/ToastNotification'
+import EditProfileModal from './components/EditProfileModal'
+import PhotoDetailModal from './components/PhotoDetailModal'
+import DeleteConfirmModal from './components/DeleteConfirmModal'
 
 const BLUR_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 
@@ -50,23 +54,23 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('Semua')
   const [loading, setLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
-  const [saving, setSaving] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [editData, setEditData] = useState<Partial<Profile>>({})
   const [spots, setSpots] = useState<Spot[]>([])
   const [photos, setPhotos] = useState<SpotPhoto[]>([])
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [genres, setGenres] = useState<string[]>(['Semua'])
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   
-  // Modal state
+  // Modal & Toast state
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
-  const [isEditingCaption, setIsEditingCaption] = useState(false)
-  const [editedCaption, setEditedCaption] = useState('')
-  const [isDeleting, setIsDeleting] = useState(false)
   const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null)
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastType, setToastType] = useState<ToastType>(null)
+
+  const showToast = (message: string, type: ToastType) => {
+    setToastMessage(message)
+    setToastType(type)
+  }
   
   const scrollRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -115,17 +119,18 @@ export default function ProfilePage() {
 
       if (profileError) throw profileError
       setProfile(profileData as Profile)
-      setEditData(profileData as Profile)
 
       // Fetch user's spots
       const { data: spotsData, error: spotsError } = await supabase
         .from('spots')
-        .select('*')
+        .select('*, spot_photos(id)')
         .eq('added_by', session.user.id)
         .order('created_at', { ascending: false })
 
       if (spotsError) throw spotsError
-      setSpots(spotsData || [])
+      
+      const activeSpots = (spotsData as any[] || []).filter(spot => spot.spot_photos && spot.spot_photos.length > 0)
+      setSpots(activeSpots)
 
       // Fetch portfolio
       const { data: photosData, error: photosError } = await supabase
@@ -149,84 +154,6 @@ export default function ProfilePage() {
       console.error('Error loading profile:', error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleSaveSettings = async () => {
-    if (!profile) return
-
-    // Validasi username
-    if (!editData.username?.trim()) {
-      alert('Username tidak boleh kosong.')
-      return
-    }
-    if (editData.username.length < 3) {
-      alert('Username minimal 3 karakter.')
-      return
-    }
-    if (!/^[a-z0-9_]+$/.test(editData.username)) {
-      alert('Username hanya boleh berisi huruf kecil, angka, dan garis bawah (_) tanpa spasi.')
-      return
-    }
-
-
-    setSaving(true)
-    try {
-      let avatar_url = profile.avatar_url
-
-      if (avatarFile) {
-        const fileExt = avatarFile.name.split('.').pop()
-        const fileName = `${profile.id}-${Math.random()}.${fileExt}`
-        const filePath = `avatars/${fileName}`
-
-        const { error: uploadError } = await supabase.storage
-          .from('photos')
-          .upload(filePath, avatarFile)
-
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('photos')
-            .getPublicUrl(filePath)
-          avatar_url = publicUrl
-        }
-      }
-
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({
-          username: editData.username,
-          full_name: editData.full_name,
-          bio: editData.bio,
-          location: editData.location,
-          gear: editData.gear,
-          avatar_url
-        })
-        .eq('id', profile.id)
-
-      if (updateError) throw updateError
-      
-      setProfile({ ...profile, ...editData, avatar_url } as Profile)
-      setIsEditing(false)
-      setAvatarFile(null)
-      setAvatarPreview(null)
-    } catch (error: any) {
-      console.error('Error updating settings:', error)
-      const msg = error?.message?.toLowerCase() || ''
-      if (msg.includes('unique') || msg.includes('duplicate')) {
-        alert('Username ini sudah dipakai oleh orang lain. Silakan pilih username yang berbeda.')
-      } else {
-        alert(`Gagal menyimpan pengaturan: ${error.message || 'Error tidak diketahui'}`)
-      }
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      setAvatarFile(file)
-      setAvatarPreview(URL.createObjectURL(file))
     }
   }
 
@@ -474,351 +401,42 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Settings / Edit Modal Overlay */}
-      <AnimatePresence>
-        {isEditing && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-background/80 backdrop-blur-md"
-              onClick={() => setIsEditing(false)}
-            />
-            
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl panel shadow-2xl overflow-hidden bg-background max-h-[90vh] flex flex-col"
-            >
-              <div className="p-6 border-b border-border flex items-center justify-between sticky top-0 bg-background z-10">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-primary/10 flex items-center justify-center text-amber-primary">
-                    <Settings className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-display font-bold">Pengaturan Profil</h2>
-                    <p className="text-xs text-muted">Sesuaikan identitas fotografimu</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setIsEditing(false)}
-                  className="p-2 hover-surface rounded-full"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+      <EditProfileModal 
+        isOpen={isEditing} 
+        onClose={() => setIsEditing(false)} 
+        profile={profile} 
+        onSaveSuccess={(p) => setProfile(p)} 
+        showToast={showToast} 
+      />
 
-              <div className="p-8 overflow-y-auto flex-1 space-y-8">
-                {/* Avatar Edit */}
-                <div className="flex flex-col items-center gap-4 py-4">
-                  <div className="relative group">
-                    <div className="w-24 h-24 rounded-[32px] overflow-hidden border-2 border-amber-primary/20 group-hover:border-amber-primary transition-all">
-                      {avatarPreview || profile.avatar_url ? (
-                        <img src={avatarPreview || profile.avatar_url || ''} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-sand/20 flex items-center justify-center"><UserIcon className="w-10 h-10 opacity-20" /></div>
-                      )}
-                    </div>
-                    <button 
-                      onClick={() => document.getElementById('avatar-edit-input')?.click()}
-                      className="absolute -bottom-2 -right-2 w-8 h-8 bg-amber-primary text-white rounded-xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-                    >
-                      <Camera className="w-4 h-4" />
-                    </button>
-                    <input id="avatar-edit-input" type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-                  </div>
-                  <p className="text-[10px] font-mono text-muted uppercase tracking-widest">Update Photo Profil</p>
-                </div>
+      <PhotoDetailModal 
+        photo={selectedPhotoIndex !== null ? photos[selectedPhotoIndex] : null}
+        onClose={() => setSelectedPhotoIndex(null)}
+        onPrev={() => setSelectedPhotoIndex(Math.max(0, (selectedPhotoIndex || 0) - 1))}
+        onNext={() => setSelectedPhotoIndex(Math.min(photos.length - 1, (selectedPhotoIndex || 0) + 1))}
+        hasPrev={(selectedPhotoIndex || 0) > 0}
+        hasNext={(selectedPhotoIndex || 0) < photos.length - 1}
+        onDeleteClick={() => setDeleteConfirmIndex(selectedPhotoIndex)}
+        onUpdateCaption={(id, cap) => {
+          setPhotos(photos.map(p => p.id === id ? { ...p, caption: cap } : p))
+        }}
+        showToast={showToast}
+      />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted ml-1">Username</label>
-                    <div className="relative group">
-                      <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-amber-primary transition-colors" />
-                      <input 
-                        className="input-base pl-12 py-3 rounded-xl text-sm"
-                        value={editData.username || ''}
-                        onChange={(e) => setEditData({...editData, username: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted ml-1">Nama Lengkap</label>
-                    <div className="relative group">
-                      <PenTool className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-amber-primary transition-colors" />
-                      <input 
-                        className="input-base pl-12 py-3 rounded-xl text-sm"
-                        value={editData.full_name || ''}
-                        onChange={(e) => setEditData({...editData, full_name: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                </div>
+      <DeleteConfirmModal 
+        isOpen={deleteConfirmIndex !== null}
+        onClose={() => setDeleteConfirmIndex(null)}
+        onConfirm={async () => {
+          if (deleteConfirmIndex === null) return
+          await supabase.from('spot_photos').delete().eq('id', photos[deleteConfirmIndex].id)
+          const newPhotos = photos.filter((_, i) => i !== deleteConfirmIndex)
+          setPhotos(newPhotos)
+          setSelectedPhotoIndex(null)
+          showToast('Foto berhasil dihapus.', 'success')
+        }}
+      />
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted ml-1">Bio Singkat</label>
-                  <textarea 
-                    className="input-base py-3 rounded-xl text-sm min-h-[100px]"
-                    placeholder="Ceritakan tentang gaya fotografimu..."
-                    value={editData.bio || ''}
-                    onChange={(e) => setEditData({...editData, bio: e.target.value})}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted ml-1">Lokasi / Basecamp</label>
-                    <div className="relative group">
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-amber-primary transition-colors" />
-                      <input 
-                        className="input-base pl-12 py-3 rounded-xl text-sm"
-                        placeholder="Jakarta, Indonesia"
-                        value={editData.location || ''}
-                        onChange={(e) => setEditData({...editData, location: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted ml-1">Gear Utama</label>
-                    <div className="relative group">
-                      <HardDrive className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-amber-primary transition-colors" />
-                      <input 
-                        className="input-base pl-12 py-3 rounded-xl text-sm"
-                        placeholder="Nikon Z9 + 24-70mm"
-                        value={editData.gear || ''}
-                        onChange={(e) => setEditData({...editData, gear: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-surface-alt rounded-2xl flex gap-3 items-start">
-                  <Info className="w-5 h-5 text-amber-primary shrink-0 mt-0.5" />
-                  <p className="text-[10px] leading-relaxed text-muted font-medium">
-                    Email terverifikasi terhubung dengan akun Supabase Auth dan tidak dapat diubah di sini. 
-                    Username bersifat publik dan harus unik dalam jaringan PhotoTracker.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-6 border-t border-border flex gap-3 sticky bottom-0 bg-background z-10">
-                <button 
-                  onClick={() => setIsEditing(false)}
-                  className="flex-1 py-3 border border-border rounded-xl font-bold text-sm hover-surface"
-                >
-                  Batal
-                </button>
-                <button 
-                  onClick={handleSaveSettings}
-                  disabled={saving}
-                  className="flex-[2] py-3 bg-amber-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-amber-primary/20 transition-all disabled:opacity-50"
-                >
-                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> Simpan Perubahan</>}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-      {/* Photo Detail Modal (Owner) */}
-      <AnimatePresence>
-        {selectedPhotoIndex !== null && photos[selectedPhotoIndex] && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-background/90 backdrop-blur-xl">
-            <button onClick={() => setSelectedPhotoIndex(null)} className="absolute top-6 right-6 p-2 bg-surface hover-surface rounded-full z-50">
-              <X className="w-6 h-6" />
-            </button>
-
-            {/* Prev Button */}
-            <button 
-              onClick={(e) => { e.stopPropagation(); setSelectedPhotoIndex(Math.max(0, selectedPhotoIndex - 1)) }}
-              disabled={selectedPhotoIndex === 0}
-              className="absolute left-6 top-1/2 -translate-y-1/2 p-3 bg-surface hover-surface rounded-full z-50 disabled:opacity-30"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-
-            {/* Next Button */}
-            <button 
-              onClick={(e) => { e.stopPropagation(); setSelectedPhotoIndex(Math.min(photos.length - 1, selectedPhotoIndex + 1)) }}
-              disabled={selectedPhotoIndex === photos.length - 1}
-              className="absolute right-6 top-1/2 -translate-y-1/2 p-3 bg-surface hover-surface rounded-full z-50 disabled:opacity-30"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row gap-6 md:gap-10 overflow-y-auto no-scrollbar items-center md:items-start"
-            >
-              {/* Photo */}
-              <div className="w-full md:w-2/3 shrink-0 flex items-center justify-center relative">
-                <img 
-                  src={photos[selectedPhotoIndex].photo_url} 
-                  alt={photos[selectedPhotoIndex].caption || ''} 
-                  className="w-full max-h-[85vh] object-contain rounded-2xl"
-                />
-              </div>
-
-              {/* Sidebar Info */}
-              <div className="w-full md:w-1/3 flex flex-col gap-6 py-4 md:py-8 pr-4">
-                {/* Spot Context */}
-                <div className="space-y-2">
-                  <Link href={`/spot/${photos[selectedPhotoIndex].spots?.id}`} className="inline-block group" onClick={() => setSelectedPhotoIndex(null)}>
-                    <h3 className="text-2xl font-display font-bold group-hover:text-amber-primary transition-colors flex items-center gap-2">
-                      {photos[selectedPhotoIndex].spots?.name}
-                      <Navigation className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </h3>
-                  </Link>
-                  <div className="flex flex-wrap gap-2">
-                    {photos[selectedPhotoIndex].spots?.genre?.map(g => (
-                      <span key={g} className="px-2 py-1 bg-surface-alt border border-border text-[10px] font-mono uppercase tracking-widest text-muted rounded-md">
-                        {g}
-                      </span>
-                    ))}
-                    {photos[selectedPhotoIndex].spots?.best_time && (
-                      <span className="px-2 py-1 bg-surface-alt border border-border text-[10px] font-mono uppercase tracking-widest text-muted rounded-md flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {photos[selectedPhotoIndex].spots?.best_time}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="h-px w-full bg-border" />
-
-                {/* Caption & Edit */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-mono uppercase tracking-widest text-muted">Caption</p>
-                    <button 
-                      onClick={() => {
-                        setIsEditingCaption(!isEditingCaption);
-                        setEditedCaption(photos[selectedPhotoIndex].caption || '');
-                      }}
-                      className="p-1.5 hover:bg-surface-alt rounded-lg text-muted hover:text-amber-primary transition-colors"
-                    >
-                      <PenTool className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  {isEditingCaption ? (
-                    <div className="space-y-3">
-                      <textarea 
-                        className="w-full bg-surface-alt border border-border rounded-xl p-3 text-sm min-h-[100px] focus:border-amber-primary outline-none transition-colors"
-                        value={editedCaption}
-                        onChange={(e) => setEditedCaption(e.target.value)}
-                        maxLength={280}
-                        placeholder="Tambahkan cerita tentang foto ini..."
-                      />
-                      <div className="flex gap-2 justify-end">
-                        <button onClick={() => setIsEditingCaption(false)} className="px-3 py-1.5 text-xs font-bold text-muted hover:text-foreground">Batal</button>
-                        <button 
-                          disabled={saving || editedCaption === (photos[selectedPhotoIndex].caption || '')}
-                          onClick={async () => {
-                            setSaving(true)
-                            try {
-                              const p = photos[selectedPhotoIndex]
-                              await supabase.from('spot_photos').update({ caption: editedCaption }).eq('id', p.id)
-                              
-                              const newPhotos = [...photos]
-                              newPhotos[selectedPhotoIndex] = { ...p, caption: editedCaption }
-                              setPhotos(newPhotos)
-                              setIsEditingCaption(false)
-                            } catch(e) {} finally {
-                              setSaving(false)
-                            }
-                          }}
-                          className="px-3 py-1.5 bg-amber-primary text-white text-xs font-bold rounded-lg disabled:opacity-50 flex items-center justify-center min-w-[70px]"
-                        >
-                          {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Simpan'}
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-sm leading-relaxed italic text-foreground/90">
-                      {photos[selectedPhotoIndex].caption ? `"${photos[selectedPhotoIndex].caption}"` : <span className="text-muted/50">Tidak ada caption.</span>}
-                    </p>
-                  )}
-                </div>
-
-                <div className="h-px w-full bg-border" />
-
-                {/* Metadata */}
-                <div className="flex items-center justify-between text-sm text-muted">
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-1.5">
-                      <Heart className="w-4 h-4 text-rose-500 fill-rose-500/20" />
-                      <span className="font-bold">{photos[selectedPhotoIndex].photo_likes?.length || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs font-mono">
-                      <Clock className="w-3.5 h-3.5" />
-                      {new Date(photos[selectedPhotoIndex].created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </div>
-                  </div>
-                  
-                  {/* Delete Action (Moved to metadata row to save vertical space) */}
-                  <button 
-                    onClick={() => setDeleteConfirmIndex(selectedPhotoIndex)}
-                    disabled={isDeleting}
-                    className="flex items-center gap-1.5 text-red-500/60 hover:text-red-500 text-xs font-bold transition-colors"
-                  >
-                    {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                    <span className="hidden sm:inline">Hapus</span>
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-      {/* Delete Confirmation Modal */}
-      <AnimatePresence>
-        {deleteConfirmIndex !== null && photos[deleteConfirmIndex] && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="w-full max-w-sm bg-surface border border-border rounded-[24px] p-6 shadow-2xl text-center"
-            >
-              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
-                <Trash2 className="w-8 h-8 text-red-500" />
-              </div>
-              <h3 className="text-xl font-display font-bold mb-2">Hapus Foto?</h3>
-              <p className="text-sm text-muted mb-6">Tindakan ini tidak dapat diurungkan. Foto akan dihapus secara permanen dari portofoliomu.</p>
-              <div className="flex gap-3">
-                <button 
-                  onClick={() => setDeleteConfirmIndex(null)}
-                  className="flex-1 py-3 bg-surface-alt border border-border hover:bg-muted/10 rounded-xl font-bold text-sm transition-colors"
-                >
-                  Batal
-                </button>
-                <button 
-                  disabled={isDeleting}
-                  onClick={async () => {
-                    setIsDeleting(true)
-                    try {
-                      await supabase.from('spot_photos').delete().eq('id', photos[deleteConfirmIndex].id)
-                      const newPhotos = photos.filter((_, i) => i !== deleteConfirmIndex)
-                      setPhotos(newPhotos)
-                      setDeleteConfirmIndex(null)
-                      setSelectedPhotoIndex(null)
-                    } catch(e) {} finally {
-                      setIsDeleting(false)
-                    }
-                  }}
-                  className="flex-1 py-3 bg-red-500 text-white hover:bg-red-600 rounded-xl font-bold text-sm flex items-center justify-center transition-colors disabled:opacity-50 shadow-lg shadow-red-500/20"
-                >
-                  {isDeleting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Hapus Foto'}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <ToastNotification message={toastMessage} type={toastType} onClose={() => setToastType(null)} />
     </main>
   )
 }
