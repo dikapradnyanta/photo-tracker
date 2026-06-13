@@ -418,7 +418,7 @@ export default function SpotDetailPage() {
         <div className="relative z-30 max-w-7xl mx-auto px-6 md:px-12 pb-4">
           <div
             ref={filmstripRef}
-            className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory"
+            className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory py-2 px-1"
           >
             {photos.map((photo, i) => (
               <button
