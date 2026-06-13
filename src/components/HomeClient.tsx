@@ -74,13 +74,13 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
             </motion.p>
 
             <motion.div variants={fadeUp} className="flex flex-wrap gap-4 mb-12">
-              <Link href="/map" className="group px-8 py-4 bg-amber-primary text-white rounded-full font-bold text-sm flex items-center gap-2 hover:shadow-xl hover:shadow-amber-primary/25 hover:-translate-y-0.5 transition-all">
-                <Compass className="w-5 h-5 group-hover:rotate-90 transition-transform duration-500" />
+              <Link href="/map" className="btn-accent">
+                <Compass className="w-4 h-4" />
                 Mulai Eksplorasi
               </Link>
-              <Link href="/add-spot" className="group px-8 py-4 bg-surface border border-border rounded-full font-bold text-sm flex items-center gap-2 hover:border-amber-primary/40 transition-all">
+              <Link href="/add-spot" className="btn-ghost">
                 Bagikan Spot
-                <ArrowRight className="w-4 h-4 text-muted group-hover:text-amber-primary transition-colors" />
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
 

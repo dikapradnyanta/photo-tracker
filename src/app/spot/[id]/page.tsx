@@ -360,41 +360,42 @@ export default function SpotDetailPage() {
               ))}
             </motion.div>
 
-            <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl lg:text-[84px] font-display font-black leading-[0.9] tracking-tighter text-white mb-6 drop-shadow-2xl">
+            <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl lg:text-[84px] font-display font-black leading-[0.9] tracking-tighter text-white mb-6">
               {spot.name}
             </motion.h1>
 
-            <motion.div variants={fadeUp} className="flex items-center flex-wrap gap-4">
-              <div className="flex items-center gap-1.5 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-full shadow-xl">
-                <MapPin className="w-4 h-4 text-amber-400" />
-                <span className="text-white/90 text-sm font-medium">{spot.latitude?.toFixed(4) ?? '–'}, {spot.longitude?.toFixed(4) ?? '–'}</span>
+            <motion.div variants={fadeUp} className="flex items-center flex-wrap gap-3">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/30 rounded-lg">
+                <MapPin className="w-3.5 h-3.5 text-white/70" />
+                <span className="text-white/80 text-xs font-mono">{spot.latitude?.toFixed(4) ?? '–'}, {spot.longitude?.toFixed(4) ?? '–'}</span>
               </div>
-              <div className="flex items-center gap-1.5 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-full shadow-xl">
-                <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                <span className="text-white font-bold text-sm">{avgRating > 0 ? avgRating : 'Baru'}</span>
-                <span className="text-white/60 text-xs">({reviews.length} ulasan)</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/30 rounded-lg">
+                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                <span className="text-white font-bold text-xs">{avgRating > 0 ? avgRating : 'Baru'}</span>
+                <span className="text-white/50 text-xs">({reviews.length})</span>
               </div>
               {activePhotoObj && (
                 <>
                   <button
                     onClick={() => handleToggleLike(activePhotoObj.id, activePhotoObj.hasLiked)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border transition-all shadow-xl ${activePhotoObj.hasLiked ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white/10 backdrop-blur-md border-white/10 text-white hover:bg-white/20'}`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      activePhotoObj.hasLiked 
+                        ? 'bg-amber-500/80 text-white' 
+                        : 'bg-black/30 text-white/80 hover:bg-black/40'
+                    }`}
                   >
-                    <Heart className={`w-4 h-4 ${activePhotoObj.hasLiked ? 'fill-white' : ''}`} />
+                    <Heart className={`w-3.5 h-3.5 ${activePhotoObj.hasLiked ? 'fill-white' : ''}`} />
                     <span>{activePhotoObj.likesCount}</span>
                   </button>
                   
-                  {/* Contributor Badge */}
-                  <Link href={`/profile/${activePhotoObj.users?.username || ''}`} className="flex items-center gap-2 px-4 py-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-full shadow-xl hover:bg-black/60 transition-colors group">
+                  {/* Contributor */}
+                  <Link href={`/profile/${activePhotoObj.users?.username || ''}`} className="flex items-center gap-2 px-3 py-1.5 bg-black/30 rounded-lg hover:bg-black/40 transition-colors">
                     {activePhotoObj.users?.avatar_url ? (
-                      <Image src={activePhotoObj.users.avatar_url} alt="Avatar" width={20} height={20} placeholder="blur" blurDataURL={BLUR_URL} className="rounded-full object-cover border border-white/20" />
+                      <Image src={activePhotoObj.users.avatar_url} alt="Avatar" width={16} height={16} placeholder="blur" blurDataURL={BLUR_URL} className="rounded-full object-cover" />
                     ) : (
-                      <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center border border-white/20">
-                        <Camera className="w-3 h-3 text-white/70" />
-                      </div>
+                      <Camera className="w-3 h-3 text-white/60" />
                     )}
-                    <span className="text-white/70 text-xs">Foto oleh</span>
-                    <span className="text-white font-bold text-sm group-hover:text-amber-400 transition-colors">
+                    <span className="text-white/70 text-xs">
                       {activePhotoObj.users?.username || 'Anonim'}
                     </span>
                   </Link>
@@ -609,7 +610,7 @@ export default function SpotDetailPage() {
                         <Star
                           className={`w-10 h-10 md:w-8 md:h-8 transition-colors ${
                             n <= (reviewHover || reviewRating)
-                              ? 'fill-amber-primary text-amber-primary drop-shadow-[0_0_8px_rgba(232,105,42,0.4)]'
+                              ? 'fill-amber-primary text-amber-primary'
                               : 'text-muted/20'
                           }`}
                         />

@@ -134,7 +134,7 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSaveSucce
             <div className="p-6 overflow-y-auto no-scrollbar space-y-8 flex-1">
               <div className="flex flex-col items-center gap-4">
                 <div className="relative group cursor-pointer">
-                  <div className="w-24 h-24 rounded-full overflow-hidden bg-surface-alt border-4 border-background shadow-xl">
+                  <div className="w-24 h-24 rounded-full overflow-hidden bg-surface-alt border border-border">
                     {avatarPreview || editData.avatar_url ? (
                       <Image 
                         src={avatarPreview || editData.avatar_url || ''} 
@@ -242,7 +242,7 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSaveSucce
               <button 
                 onClick={handleSaveSettings}
                 disabled={saving}
-                className="flex-[2] py-3 bg-amber-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-amber-primary/20 transition-all disabled:opacity-50"
+                className="btn-accent flex-[2] py-3 text-sm disabled:opacity-50"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> Simpan Perubahan</>}
               </button>
