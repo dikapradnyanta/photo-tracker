@@ -15,7 +15,13 @@ import {
   Zap,
   Grid,
   Share2,
-  Check
+  Check,
+  X,
+  Navigation,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  Clock
 } from 'lucide-react'
 import { Database } from '@/types/database'
 import { AnimatePresence } from 'framer-motion'
@@ -23,7 +29,8 @@ import { AnimatePresence } from 'framer-motion'
 type Profile = Database['public']['Tables']['users']['Row']
 type Spot = Database['public']['Tables']['spots']['Row']
 type SpotPhoto = Database['public']['Tables']['spot_photos']['Row'] & {
-  spots: { name: string; genre: string[] | null } | null
+  spots: { id: string; name: string; genre: string[] | null; best_time: string | null; difficulty: string | null } | null
+  photo_likes?: { user_id: string }[]
 }
 
 export default function PublicProfilePage() {
@@ -36,6 +43,7 @@ export default function PublicProfilePage() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
 
   useEffect(() => {
     if (!username) return
@@ -92,7 +100,7 @@ export default function PublicProfilePage() {
       // Fetch portfolio photos
       const { data: photosData } = await supabase
         .from('spot_photos')
-        .select('*, spots(name, genre)')
+        .select('*, spots(id, name, genre, best_time, difficulty), photo_likes(user_id)')
         .eq('user_id', profileData.id)
         .order('created_at', { ascending: false })
       setPhotos((photosData as SpotPhoto[]) || [])
@@ -240,6 +248,7 @@ export default function PublicProfilePage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.03 }}
+                onClick={() => setSelectedPhotoIndex(i)}
                 className="group relative aspect-square rounded-[24px] overflow-hidden panel hover:border-amber-primary transition-all cursor-pointer"
               >
                 <img
@@ -286,6 +295,101 @@ export default function PublicProfilePage() {
           </div>
         )}
       </div>
+
+      {/* Photo Detail Modal (Read-Only) */}
+      <AnimatePresence>
+        {selectedPhotoIndex !== null && photos[selectedPhotoIndex] && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-background/90 backdrop-blur-xl">
+            <button onClick={() => setSelectedPhotoIndex(null)} className="absolute top-6 right-6 p-2 bg-surface hover-surface rounded-full z-50">
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* Prev Button */}
+            <button 
+              onClick={(e) => { e.stopPropagation(); setSelectedPhotoIndex(Math.max(0, selectedPhotoIndex - 1)) }}
+              disabled={selectedPhotoIndex === 0}
+              className="absolute left-6 top-1/2 -translate-y-1/2 p-3 bg-surface hover-surface rounded-full z-50 disabled:opacity-30"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+
+            {/* Next Button */}
+            <button 
+              onClick={(e) => { e.stopPropagation(); setSelectedPhotoIndex(Math.min(photos.length - 1, selectedPhotoIndex + 1)) }}
+              disabled={selectedPhotoIndex === photos.length - 1}
+              className="absolute right-6 top-1/2 -translate-y-1/2 p-3 bg-surface hover-surface rounded-full z-50 disabled:opacity-30"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row gap-6 md:gap-10 overflow-y-auto no-scrollbar items-center md:items-start"
+            >
+              {/* Photo */}
+              <div className="w-full md:w-2/3 shrink-0 flex items-center justify-center relative">
+                <img 
+                  src={photos[selectedPhotoIndex].photo_url} 
+                  alt={photos[selectedPhotoIndex].caption || ''} 
+                  className="w-full max-h-[85vh] object-contain rounded-2xl"
+                />
+              </div>
+
+              {/* Sidebar Info */}
+              <div className="w-full md:w-1/3 flex flex-col gap-6 py-4 md:py-8 pr-4">
+                {/* Spot Context */}
+                <div className="space-y-2">
+                  <Link href={`/spot/${photos[selectedPhotoIndex].spots?.id}`} className="inline-block group" onClick={() => setSelectedPhotoIndex(null)}>
+                    <h3 className="text-2xl font-display font-bold group-hover:text-amber-primary transition-colors flex items-center gap-2">
+                      {photos[selectedPhotoIndex].spots?.name}
+                      <Navigation className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </h3>
+                  </Link>
+                  <div className="flex flex-wrap gap-2">
+                    {photos[selectedPhotoIndex].spots?.genre?.map(g => (
+                      <span key={g} className="px-2 py-1 bg-surface-alt border border-border text-[10px] font-mono uppercase tracking-widest text-muted rounded-md">
+                        {g}
+                      </span>
+                    ))}
+                    {photos[selectedPhotoIndex].spots?.best_time && (
+                      <span className="px-2 py-1 bg-surface-alt border border-border text-[10px] font-mono uppercase tracking-widest text-muted rounded-md flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> {photos[selectedPhotoIndex].spots?.best_time}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="h-px w-full bg-border" />
+
+                {/* Caption */}
+                <div className="space-y-3">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted">Caption</p>
+                  <p className="text-sm leading-relaxed italic text-foreground/90">
+                    {photos[selectedPhotoIndex].caption ? `"${photos[selectedPhotoIndex].caption}"` : <span className="text-muted/50">Tidak ada caption.</span>}
+                  </p>
+                </div>
+
+                <div className="h-px w-full bg-border" />
+
+                {/* Metadata */}
+                <div className="flex items-center gap-6 text-sm text-muted">
+                  <div className="flex items-center gap-1.5">
+                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500/20" />
+                    <span className="font-bold">{photos[selectedPhotoIndex].photo_likes?.length || 0}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs font-mono">
+                    <Clock className="w-3.5 h-3.5" />
+                    {new Date(photos[selectedPhotoIndex].created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </div>
+                </div>
+
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   )
 }

@@ -18,7 +18,13 @@ import {
   PenTool,
   Info,
   Share2,
-  Check
+  Check,
+  Trash2,
+  Navigation,
+  Heart,
+  ChevronLeft,
+  ChevronRight,
+  Clock
 } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -33,7 +39,8 @@ const BLUR_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1
 type Profile = Database['public']['Tables']['users']['Row']
 type Spot = Database['public']['Tables']['spots']['Row']
 type SpotPhoto = Database['public']['Tables']['spot_photos']['Row'] & {
-  spots: { name: string; genre: string[] | null } | null
+  spots: { id: string; name: string; genre: string[] | null; best_time: string | null; difficulty: string | null } | null
+  photo_likes?: { user_id: string }[]
   exif_camera?: string | null
   exif_lens?: string | null
   exif_settings?: string | null
@@ -53,6 +60,12 @@ export default function ProfilePage() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  
+  // Modal state
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
+  const [isEditingCaption, setIsEditingCaption] = useState(false)
+  const [editedCaption, setEditedCaption] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
   
   const scrollRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -116,7 +129,7 @@ export default function ProfilePage() {
       // Fetch portfolio
       const { data: photosData, error: photosError } = await supabase
         .from('spot_photos')
-        .select('*, spots(name, genre)')
+        .select('*, spots(id, name, genre, best_time, difficulty), photo_likes(user_id)')
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false })
 
@@ -254,60 +267,95 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-background text-foreground pb-20 transition-colors">
 
-      {/* Header Profile */}
-      <div className="relative pt-32 pb-16 px-6">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 relative z-10 items-end">
-          
-          {/* Info Area (Left, Large Typography) */}
-          <div className="md:col-span-8 flex flex-col justify-end space-y-6">
-            <div>
-              <span className="px-3 py-1 bg-amber-primary text-white text-[10px] font-mono font-bold rounded-sm uppercase tracking-widest mb-4 inline-block">
-                {userLevel} Photographer
-              </span>
-              <h1 className="text-5xl md:text-7xl font-display font-black leading-[0.9] tracking-tighter">
-                {profile.full_name || profile.username || 'Fotografer'}
-              </h1>
+      {/* Profile Header */}
+      <div className="relative pt-[var(--nav-height)] pb-12 px-6 overflow-hidden mt-16 md:mt-24">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-10 items-center md:items-start relative z-10">
+          {/* Avatar */}
+          <div className="relative shrink-0">
+            <div className="w-28 h-28 rounded-[36px] bg-surface-alt p-1 border border-border shadow-xl">
+              <div className="w-full h-full rounded-[32px] bg-sand/20 flex items-center justify-center overflow-hidden relative">
+                {profile.avatar_url ? (
+                  <Image src={profile.avatar_url} alt={profile.username || ''} fill sizes="112px" className="object-cover" />
+                ) : (
+                  <UserIcon className="w-12 h-12 opacity-20" />
+                )}
+              </div>
             </div>
-
-            <p className="max-w-xl text-lg md:text-2xl font-serif text-muted leading-relaxed italic opacity-90 border-l-2 border-amber-primary pl-6">
-              "{profile.bio || 'Mulai ceritamu di sini...'}"
-            </p>
-
-            <div className="flex flex-wrap items-center gap-6 text-xs font-mono text-muted uppercase tracking-widest pt-4">
-              <span className="flex items-center gap-2"><UserIcon className="w-4 h-4 text-amber-primary" /> @{profile.username}</span>
-              <span className="flex items-center gap-2"><MapPin className="w-4 h-4 text-amber-primary" /> {profile.location ? profile.location.split(', ').slice(0, 2).join(', ') : 'Basecamp belum diatur'}</span>
-              <span className="flex items-center gap-2"><HardDrive className="w-4 h-4 text-amber-primary" /> {profile.gear || 'No Gear'}</span>
+            <div className="absolute -bottom-2 -right-2 w-9 h-9 bg-amber-primary rounded-xl flex items-center justify-center border-4 border-background shadow-lg">
+              <Award className="w-4 h-4 text-white" />
             </div>
           </div>
 
-          {/* Avatar & Stats Area (Right) */}
-          <div className="md:col-span-4 flex flex-col items-end gap-8">
-            <div className="relative w-40 h-48 md:w-56 md:h-72 bg-surface border border-border shadow-2xl p-2 transform rotate-2 hover:rotate-0 transition-transform duration-500">
-              <div className="w-full h-full bg-sand/20 overflow-hidden relative">
-                {profile.avatar_url ? (
-                  <Image src={profile.avatar_url} alt={profile.username || ''} fill sizes="250px" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover grayscale hover:grayscale-0 transition-all duration-700" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center"><UserIcon className="w-16 h-16 opacity-30" /></div>
-                )}
-                <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-amber-primary rounded-full flex items-center justify-center border-4 border-background shadow-xl">
-                  <Award className="w-6 h-6 text-white" />
-                </div>
+          {/* Info */}
+          <div className="flex-1 text-center md:text-left space-y-4">
+            <div>
+              <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 mb-1.5">
+                <h1 className="text-3xl font-display font-bold">{profile.full_name || profile.username}</h1>
+                <span className="px-2.5 py-0.5 bg-amber-primary/10 border border-amber-primary/20 text-amber-primary text-[9px] font-mono font-bold rounded-full uppercase tracking-widest">
+                  {userLevel}
+                </span>
+
+                <button onClick={handleShare} className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-alt border border-border rounded-full text-[10px] font-bold hover:border-amber-primary/40 transition-all">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={copied ? 'copied' : 'share'}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.15 }}
+                      className="flex items-center gap-1.5"
+                    >
+                      {copied ? (
+                        <><Check className="w-3 h-3 text-emerald-500" /> <span className="text-emerald-500">Disalin!</span></>
+                      ) : (
+                        <><Share2 className="w-3 h-3" /> Bagikan</>
+                      )}
+                    </motion.span>
+                  </AnimatePresence>
+                </button>
+
+                <button onClick={() => setIsEditing(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-alt border border-border rounded-full text-[10px] font-bold hover:border-amber-primary/40 transition-all">
+                  <Settings className="w-3 h-3" /> Edit Profil
+                </button>
               </div>
+              <p className="text-xs font-mono text-muted">@{profile.username}</p>
+              {profile.location && (
+                <p className="text-muted flex justify-center md:justify-start items-center gap-1.5 text-sm mt-1">
+                  <MapPin className="w-3.5 h-3.5" /> {profile.location}
+                </p>
+              )}
             </div>
 
-            <div className="flex gap-6 text-right">
-              <div>
-                <span className="block text-3xl font-display font-bold">{spots.length}</span>
-                <span className="text-[10px] font-mono text-muted uppercase tracking-widest">Spots</span>
+            {profile.bio && (
+              <p className="max-w-md text-sm text-muted/80 leading-relaxed italic mx-auto md:mx-0">
+                "{profile.bio}"
+              </p>
+            )}
+
+            {profile.gear && (
+              <div className="flex items-center justify-center md:justify-start gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-alt rounded-xl border border-border text-xs font-medium">
+                  <HardDrive className="w-3.5 h-3.5 text-amber-primary" />
+                  {profile.gear}
+                </div>
               </div>
-              <div className="w-px h-10 bg-border" />
-              <div>
-                <span className="block text-3xl font-display font-bold">{photos.length}</span>
-                <span className="text-[10px] font-mono text-muted uppercase tracking-widest">Photos</span>
-              </div>
+            )}
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-4 w-full md:w-auto mt-6 md:mt-0">
+            <div className="p-4 panel text-center min-w-[90px] rounded-3xl">
+              <span className="block text-2xl font-display font-bold">{spots.length}</span>
+              <span className="text-[10px] font-mono text-muted uppercase tracking-widest">Spots</span>
+            </div>
+            <div className="p-4 panel text-center min-w-[90px] rounded-3xl">
+              <span className="block text-2xl font-display font-bold">{photos.length}</span>
+              <span className="text-[10px] font-mono text-muted uppercase tracking-widest">Photos</span>
             </div>
           </div>
         </div>
+
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-amber-primary/[0.03] blur-[100px] -z-10" />
       </div>
 
       {/* Portfolio Section & Actions */}
@@ -333,37 +381,6 @@ export default function ProfilePage() {
               </button>
             </div>
           </div>
-          
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={handleShare}
-              className="px-4 md:px-6 py-2 bg-surface-alt border border-border rounded-xl text-xs font-bold flex items-center gap-2 hover:border-amber-primary/40 transition-all"
-            >
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={copied ? 'copied' : 'share'}
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.15 }}
-                  className="flex items-center gap-2"
-                >
-                  {copied ? (
-                    <><Check className="w-3.5 h-3.5 text-emerald-500" /> <span className="text-emerald-500">Tautan Disalin!</span></>
-                  ) : (
-                    <><Share2 className="w-3.5 h-3.5" /> <span className="hidden md:inline">Bagikan Profil</span><span className="md:hidden">Bagikan</span></>
-                  )}
-                </motion.span>
-              </AnimatePresence>
-            </button>
-            <button 
-              onClick={() => setIsEditing(true)}
-              className="px-4 md:px-6 py-2 bg-surface-alt border border-border rounded-xl text-xs font-bold flex items-center gap-2 hover:border-amber-primary transition-all"
-            >
-              <Settings className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Edit Profil</span><span className="md:hidden">Edit</span>
-            </button>
-          </div>
         </div>
 
         {photos.length === 0 ? (
@@ -382,6 +399,7 @@ export default function ProfilePage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.03 }}
+                onClick={() => setSelectedPhotoIndex(i)}
                 className={`group relative overflow-hidden panel hover:border-amber-primary transition-all cursor-pointer ${viewMode === 'grid' ? 'aspect-square rounded-[24px]' : 'w-full rounded-[32px]'}`}
               >
                 {viewMode === 'list' ? (
@@ -598,6 +616,170 @@ export default function ProfilePage() {
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> Simpan Perubahan</>}
                 </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      {/* Photo Detail Modal (Owner) */}
+      <AnimatePresence>
+        {selectedPhotoIndex !== null && photos[selectedPhotoIndex] && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-background/90 backdrop-blur-xl">
+            <button onClick={() => setSelectedPhotoIndex(null)} className="absolute top-6 right-6 p-2 bg-surface hover-surface rounded-full z-50">
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* Prev Button */}
+            <button 
+              onClick={(e) => { e.stopPropagation(); setSelectedPhotoIndex(Math.max(0, selectedPhotoIndex - 1)) }}
+              disabled={selectedPhotoIndex === 0}
+              className="absolute left-6 top-1/2 -translate-y-1/2 p-3 bg-surface hover-surface rounded-full z-50 disabled:opacity-30"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+
+            {/* Next Button */}
+            <button 
+              onClick={(e) => { e.stopPropagation(); setSelectedPhotoIndex(Math.min(photos.length - 1, selectedPhotoIndex + 1)) }}
+              disabled={selectedPhotoIndex === photos.length - 1}
+              className="absolute right-6 top-1/2 -translate-y-1/2 p-3 bg-surface hover-surface rounded-full z-50 disabled:opacity-30"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row gap-6 md:gap-10 overflow-y-auto no-scrollbar items-center md:items-start"
+            >
+              {/* Photo */}
+              <div className="w-full md:w-2/3 shrink-0 flex items-center justify-center relative">
+                <img 
+                  src={photos[selectedPhotoIndex].photo_url} 
+                  alt={photos[selectedPhotoIndex].caption || ''} 
+                  className="w-full max-h-[85vh] object-contain rounded-2xl"
+                />
+              </div>
+
+              {/* Sidebar Info */}
+              <div className="w-full md:w-1/3 flex flex-col gap-6 py-4 md:py-8 pr-4">
+                {/* Spot Context */}
+                <div className="space-y-2">
+                  <Link href={`/spot/${photos[selectedPhotoIndex].spots?.id}`} className="inline-block group" onClick={() => setSelectedPhotoIndex(null)}>
+                    <h3 className="text-2xl font-display font-bold group-hover:text-amber-primary transition-colors flex items-center gap-2">
+                      {photos[selectedPhotoIndex].spots?.name}
+                      <Navigation className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </h3>
+                  </Link>
+                  <div className="flex flex-wrap gap-2">
+                    {photos[selectedPhotoIndex].spots?.genre?.map(g => (
+                      <span key={g} className="px-2 py-1 bg-surface-alt border border-border text-[10px] font-mono uppercase tracking-widest text-muted rounded-md">
+                        {g}
+                      </span>
+                    ))}
+                    {photos[selectedPhotoIndex].spots?.best_time && (
+                      <span className="px-2 py-1 bg-surface-alt border border-border text-[10px] font-mono uppercase tracking-widest text-muted rounded-md flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> {photos[selectedPhotoIndex].spots?.best_time}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="h-px w-full bg-border" />
+
+                {/* Caption & Edit */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-mono uppercase tracking-widest text-muted">Caption</p>
+                    <button 
+                      onClick={() => {
+                        setIsEditingCaption(!isEditingCaption);
+                        setEditedCaption(photos[selectedPhotoIndex].caption || '');
+                      }}
+                      className="p-1.5 hover:bg-surface-alt rounded-lg text-muted hover:text-amber-primary transition-colors"
+                    >
+                      <PenTool className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {isEditingCaption ? (
+                    <div className="space-y-3">
+                      <textarea 
+                        className="w-full bg-surface-alt border border-border rounded-xl p-3 text-sm min-h-[100px] focus:border-amber-primary outline-none transition-colors"
+                        value={editedCaption}
+                        onChange={(e) => setEditedCaption(e.target.value)}
+                        maxLength={280}
+                        placeholder="Tambahkan cerita tentang foto ini..."
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <button onClick={() => setIsEditingCaption(false)} className="px-3 py-1.5 text-xs font-bold text-muted hover:text-foreground">Batal</button>
+                        <button 
+                          disabled={saving || editedCaption === (photos[selectedPhotoIndex].caption || '')}
+                          onClick={async () => {
+                            setSaving(true)
+                            try {
+                              const p = photos[selectedPhotoIndex]
+                              await supabase.from('spot_photos').update({ caption: editedCaption }).eq('id', p.id)
+                              
+                              const newPhotos = [...photos]
+                              newPhotos[selectedPhotoIndex] = { ...p, caption: editedCaption }
+                              setPhotos(newPhotos)
+                              setIsEditingCaption(false)
+                            } catch(e) {} finally {
+                              setSaving(false)
+                            }
+                          }}
+                          className="px-3 py-1.5 bg-amber-primary text-white text-xs font-bold rounded-lg disabled:opacity-50 flex items-center justify-center min-w-[70px]"
+                        >
+                          {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Simpan'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm leading-relaxed italic text-foreground/90">
+                      {photos[selectedPhotoIndex].caption ? `"${photos[selectedPhotoIndex].caption}"` : <span className="text-muted/50">Tidak ada caption.</span>}
+                    </p>
+                  )}
+                </div>
+
+                <div className="h-px w-full bg-border" />
+
+                {/* Metadata */}
+                <div className="flex items-center justify-between text-sm text-muted">
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-1.5">
+                      <Heart className="w-4 h-4 text-rose-500 fill-rose-500/20" />
+                      <span className="font-bold">{photos[selectedPhotoIndex].photo_likes?.length || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs font-mono">
+                      <Clock className="w-3.5 h-3.5" />
+                      {new Date(photos[selectedPhotoIndex].created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </div>
+                  </div>
+                  
+                  {/* Delete Action (Moved to metadata row to save vertical space) */}
+                  <button 
+                    onClick={async () => {
+                      if (confirm('Yakin ingin menghapus foto ini? Aksi ini tidak bisa dibatalkan.')) {
+                        setIsDeleting(true)
+                        try {
+                          await supabase.from('spot_photos').delete().eq('id', photos[selectedPhotoIndex].id)
+                          const newPhotos = photos.filter((_, i) => i !== selectedPhotoIndex)
+                          setPhotos(newPhotos)
+                          setSelectedPhotoIndex(null)
+                        } catch(e) {} finally {
+                          setIsDeleting(false)
+                        }
+                      }
+                    }}
+                    disabled={isDeleting}
+                    className="flex items-center gap-1.5 text-red-500/60 hover:text-red-500 text-xs font-bold transition-colors"
+                  >
+                    {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                    <span className="hidden sm:inline">Hapus</span>
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
