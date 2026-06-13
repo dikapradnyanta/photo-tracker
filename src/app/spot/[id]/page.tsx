@@ -9,7 +9,7 @@ import { motion, AnimatePresence, Variants } from 'framer-motion'
 import {
   ArrowLeft, MapPin, Clock, Zap, Star, Camera, Loader2,
   Heart, MessageSquare, Navigation, Send, ChevronLeft, ChevronRight, Check,
-  Route, NotepadText
+  Route, Lightbulb
 } from 'lucide-react'
 import { Database } from '@/types/database'
 import { useToast } from '@/context/ToastContext'
@@ -496,7 +496,7 @@ export default function SpotDetailPage() {
           {spot.tips_trik && (
             <div className="group p-8 rounded-[24px] border border-border bg-surface hover:border-foreground/20 transition-all duration-300">
               <div className="flex items-center gap-2.5 mb-5">
-                <NotepadText className="w-4 h-4 text-muted group-hover:text-foreground transition-colors" />
+                <Lightbulb className="w-4 h-4 text-muted group-hover:text-foreground transition-colors" />
                 <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted font-bold">Tips & Trik</h3>
               </div>
               <p className="text-foreground/90 leading-relaxed text-lg">{spot.tips_trik}</p>
