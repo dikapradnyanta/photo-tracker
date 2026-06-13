@@ -354,7 +354,7 @@ export default function SpotDetailPage() {
 
             <motion.div variants={fadeUp} className="flex flex-wrap gap-2 mb-4">
               {spot.genre?.map(g => (
-                <span key={g} className="px-3 py-1 bg-amber-500 text-white text-[10px] font-mono font-black rounded uppercase tracking-wider shadow-lg">
+                <span key={g} className="badge badge-amber">
                   {g}
                 </span>
               ))}
@@ -409,7 +409,7 @@ export default function SpotDetailPage() {
       <div className="relative z-30 max-w-7xl mx-auto px-6 md:px-12 pt-8 pb-4 flex items-center justify-between">
         <h3 className="text-2xl font-display font-bold">Galeri Spot</h3>
         {currentUser && (
-          <button onClick={() => setIsAddingPhoto(true)} className="flex items-center gap-2 px-4 py-2 bg-amber-primary text-white text-sm font-bold rounded-full hover:bg-amber-primary/90 transition-colors shadow-lg">
+          <button onClick={() => setIsAddingPhoto(true)} className="btn-accent text-sm">
             <Camera className="w-4 h-4" /> Tambah Foto
           </button>
         )}
@@ -578,22 +578,24 @@ export default function SpotDetailPage() {
         {/* Right Column — Reviews Panel */}
         <div className="lg:col-span-4">
           <div className="sticky top-28 space-y-8">
-            <div className="flex items-center justify-between pb-4 border-b border-border">
-              <h3 className="text-2xl font-display font-bold flex items-center gap-3">
-                <MessageSquare className="w-6 h-6 text-amber-primary" /> Review
-              </h3>
-              <span className="text-xs font-mono font-bold px-3 py-1 bg-surface-alt rounded-full">{reviews.length} Ulasan</span>
+            <div className="flex items-center justify-between pb-4">
+              <div className="flex items-center gap-3">
+                <MessageSquare className="w-5 h-5 text-amber-primary" />
+                <h3 className="text-2xl font-display font-bold">Review</h3>
+              </div>
+              <span className="badge">{reviews.length} Ulasan</span>
             </div>
+            <div className="divider mb-6" />
 
             {currentUser ? (
               hasReviewed ? (
-                <div className="p-6 rounded-[24px] bg-surface-alt border border-border text-center">
+                <div className="panel p-6 text-center">
                   <Check className="w-8 h-8 text-amber-primary mx-auto mb-3" />
                   <p className="font-bold text-sm">Kamu sudah pernah memberikan ulasan untuk spot ini.</p>
                 </div>
               ) : (
-                <div className="p-6 rounded-[24px] bg-surface border border-border shadow-lg">
-                  <p className="text-sm font-bold mb-4">Bagaimana pengalamanmu?</p>
+                <div className="panel p-6">
+                  <p className="label-mono mb-4">Bagaimana pengalamanmu?</p>
                   {/* Touch-target wrappers for stars */}
                   <div className="flex gap-2 mb-6">
                     {[1,2,3,4,5].map(n => (
@@ -615,7 +617,7 @@ export default function SpotDetailPage() {
                     ))}
                   </div>
                   <textarea
-                    className="w-full bg-background border border-border py-3 px-4 rounded-xl text-sm min-h-[100px] mb-4 resize-none focus:border-amber-primary/50 focus:ring-1 focus:ring-amber-primary/50 outline-none transition-all"
+                    className="input-base min-h-[100px] mb-4 resize-none"
                     placeholder="Ceritakan detail akses, cuaca, atau angle terbaikmu..."
                     value={reviewComment}
                     onChange={e => setReviewComment(e.target.value)}
@@ -623,7 +625,7 @@ export default function SpotDetailPage() {
                   <button
                     onClick={handleSubmitReview}
                     disabled={reviewRating === 0 || submittingReview}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-foreground text-background rounded-xl font-bold hover:opacity-90 transition-all disabled:opacity-40"
+                    className="btn-primary w-full disabled:opacity-40"
                   >
                     {submittingReview ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
                     Kirim Ulasan
@@ -631,10 +633,10 @@ export default function SpotDetailPage() {
                 </div>
               )
             ) : (
-              <div className="p-8 text-center rounded-[24px] bg-amber-primary/5 border border-amber-primary/20">
+              <div className="panel p-8 text-center">
                 <Star className="w-8 h-8 text-amber-primary mx-auto mb-4" />
                 <p className="text-sm text-foreground/80 mb-6">Login untuk memberikan ulasan pada spot ini.</p>
-                <Link href="/login" className="inline-flex items-center justify-center px-6 py-3 bg-amber-primary text-white font-bold rounded-full hover:shadow-lg w-full">
+                <Link href="/login" className="btn-accent w-full">
                   Login sekarang
                 </Link>
               </div>
@@ -655,7 +657,7 @@ export default function SpotDetailPage() {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: i * 0.1 }}
-                      className="p-5 rounded-[20px] bg-surface border border-border group"
+                    className="panel p-5 group"
                     >
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">

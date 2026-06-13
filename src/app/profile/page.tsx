@@ -341,23 +341,23 @@ export default function ProfilePage() {
 
             {profile.gear && (
               <div className="flex items-center justify-center md:justify-start gap-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-alt rounded-xl border border-border text-xs font-medium">
-                  <HardDrive className="w-3.5 h-3.5 text-amber-primary" />
+                <span className="badge flex items-center gap-1.5">
+                  <HardDrive className="w-3 h-3 text-amber-primary" />
                   {profile.gear}
-                </div>
+                </span>
               </div>
             )}
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 gap-4 w-full md:w-auto mt-6 md:mt-0">
-            <div className="p-4 panel text-center min-w-[90px] rounded-3xl">
+            <div className="panel p-4 text-center min-w-[90px]">
               <span className="block text-2xl font-display font-bold">{spots.length}</span>
-              <span className="text-[10px] font-mono text-muted uppercase tracking-widest">Spots</span>
+              <span className="label-mono">Spots</span>
             </div>
-            <div className="p-4 panel text-center min-w-[90px] rounded-3xl">
+            <div className="panel p-4 text-center min-w-[90px]">
               <span className="block text-2xl font-display font-bold">{photos.length}</span>
-              <span className="text-[10px] font-mono text-muted uppercase tracking-widest">Photos</span>
+              <span className="label-mono">Photos</span>
             </div>
           </div>
         </div>
@@ -461,11 +461,11 @@ export default function ProfilePage() {
           <div className="mt-16">
             <div className="flex items-center gap-3 mb-6">
               <MapPin className="w-4 h-4 text-amber-primary" />
-              <p className="text-[10px] font-mono uppercase tracking-widest text-muted">Spot yang Ditambahkan</p>
+              <p className="label-mono">Spot yang Ditambahkan</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {spots.slice(0, 6).map(spot => (
-                <Link key={spot.id} href={`/spot/${spot.id}`} className="flex items-center gap-4 p-4 panel rounded-2xl hover:border-amber-primary transition-all group">
+                <Link key={spot.id} href={`/spot/${spot.id}`} className="panel-interactive flex items-center gap-4 p-4">
                   <div className="w-10 h-10 rounded-xl bg-amber-primary/10 flex items-center justify-center shrink-0">
                     <MapPin className="w-5 h-5 text-amber-primary" />
                   </div>
