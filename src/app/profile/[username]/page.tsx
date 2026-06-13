@@ -144,8 +144,89 @@ export default function PublicProfilePage() {
     <main className="min-h-screen bg-background text-foreground pb-20 transition-colors">
 
       {/* Profile Header */}
-      <div className="relative pt-[var(--nav-height)] pb-12 px-6 overflow-hidden">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-10 items-center md:items-start relative z-10">
+      <div className="relative pt-[var(--nav-height)] pb-12 px-4 md:px-6 overflow-hidden mt-8 md:mt-24">
+        {/* Mobile View (< md) */}
+        <div className="md:hidden max-w-5xl mx-auto flex flex-col gap-4 relative z-10">
+          {/* Avatar and Stats Row */}
+          <div className="flex items-center gap-6">
+            <div className="relative shrink-0">
+              <div className="w-20 h-20 rounded-full bg-surface-alt p-1 border border-border shadow-md">
+                <div className="w-full h-full rounded-full bg-sand/20 flex items-center justify-center overflow-hidden">
+                  {profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt={profile.username || ''} className="w-full h-full object-cover" />
+                  ) : (
+                    <UserIcon className="w-8 h-8 opacity-20" />
+                  )}
+                </div>
+              </div>
+              <div className="absolute bottom-0 right-0 w-6 h-6 bg-amber-primary rounded-full flex items-center justify-center border-2 border-background shadow-md">
+                <Award className="w-3 h-3 text-white" />
+              </div>
+            </div>
+
+            <div className="flex-1 flex justify-around items-center">
+              <div className="flex flex-col items-center">
+                <span className="text-xl font-display font-bold">{spots.length}</span>
+                <span className="text-[11px] text-muted font-mono uppercase tracking-widest">Spots</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xl font-display font-bold">{photos.length}</span>
+                <span className="text-[11px] text-muted font-mono uppercase tracking-widest">Photos</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bio Info */}
+          <div className="flex flex-col text-sm space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-base">{profile.full_name || profile.username}</span>
+              <span className="px-2 py-0.5 bg-amber-primary/10 border border-amber-primary/20 text-amber-primary text-[9px] font-mono font-bold rounded-full uppercase tracking-widest">
+                {userLevel}
+              </span>
+            </div>
+            <p className="text-xs font-mono text-muted">@{profile.username}</p>
+            {profile.bio && (
+              <p className="text-sm leading-relaxed text-muted/90 italic mt-1">
+                {profile.bio}
+              </p>
+            )}
+            {profile.location && (
+              <p className="text-muted flex items-center gap-1.5 text-xs mt-1">
+                <MapPin className="w-3.5 h-3.5" /> {profile.location}
+              </p>
+            )}
+            {profile.gear && (
+              <div className="flex items-center gap-1.5 text-xs text-muted mt-1">
+                <HardDrive className="w-3.5 h-3.5" /> {profile.gear}
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 mt-3">
+            <button onClick={handleShare} className="w-full py-1.5 bg-surface-alt border border-border rounded-lg text-sm font-semibold hover:border-amber-primary/40 transition-colors flex justify-center items-center gap-1.5">
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={copied ? 'copied' : 'share'}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex items-center gap-1.5"
+                >
+                  {copied ? (
+                    <><Check className="w-3.5 h-3.5 text-emerald-500" /> <span className="text-emerald-500">Tautan Disalin!</span></>
+                  ) : (
+                    <><Share2 className="w-3.5 h-3.5" /> Bagikan Profil</>
+                  )}
+                </motion.span>
+              </AnimatePresence>
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop View (>= md) */}
+        <div className="hidden md:flex max-w-5xl mx-auto flex-col md:flex-row gap-10 items-center md:items-start relative z-10">
           {/* Avatar */}
           <div className="relative">
             <div className="w-28 h-28 rounded-[36px] bg-surface-alt p-1 border border-border shadow-xl">
