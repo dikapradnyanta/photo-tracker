@@ -478,7 +478,7 @@ export default function SpotDetailPage() {
               </p>
             </div>
             
-            <div className="relative p-6 rounded-[24px] overflow-hidden group border bg-surface shadow-md" style={{ borderColor: diffStyle.border }}>
+            <div className="relative p-6 rounded-[24px] overflow-hidden group border border-border bg-surface shadow-md">
               <div className="absolute inset-0 -z-10" style={{ background: diffStyle.bg }} />
               <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 group-hover:opacity-10 transition-all duration-500">
                 <Route className={`w-20 h-20 ${diffStyle.text}`} />
