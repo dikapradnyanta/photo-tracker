@@ -540,7 +540,14 @@ export default function SpotDetailPage() {
                     className="w-[300px] shrink-0 snap-center group block rounded-[24px] overflow-hidden bg-surface border border-border hover:border-amber-primary/40 transition-all shadow-md"
                   >
                     <div className="aspect-[4/3] relative overflow-hidden bg-surface-alt">
-                      <Image src={ts.hero_photo_url || 'https://via.placeholder.com/400'} alt="" fill sizes="300px" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                      {ts.hero_photo_url ? (
+                        <Image src={ts.hero_photo_url} alt="" fill sizes="300px" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                          <Camera className="w-10 h-10 text-muted/20" />
+                          <span className="text-[10px] font-mono text-muted/40 uppercase tracking-widest">Belum ada foto</span>
+                        </div>
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                       
                       {/* Genre Chip */}

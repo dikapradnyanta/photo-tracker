@@ -31,12 +31,10 @@ const BLUR_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1
 
 export default function HomeClient({ spots, highlightUser, communityPhotos }: { spots: any[], highlightUser: any, communityPhotos: any[] }) {
   
-  // Safe photo fetching
+  // Safe photo fetching for hero community collage
   const c1 = communityPhotos[0]?.photo_url || "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80"
   const c2 = communityPhotos[1]?.photo_url || "https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&q=80"
   const c3 = communityPhotos[2]?.photo_url || "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=600&q=80"
-  const c4 = communityPhotos[3]?.photo_url || "https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=600&q=80"
-  const c5 = communityPhotos[4]?.photo_url || "https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=600&q=80"
 
   const topSpots = spots.slice(0, 6)
   
@@ -136,7 +134,14 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           {/* Top Row: 1 Large (7 cols) + 2 Medium (5 cols) */}
           {topSpots[0] && (
             <Link href={`/spot/${topSpots[0].id}`} className="col-span-12 md:col-span-7 group relative rounded-[32px] overflow-hidden aspect-[16/10] bg-surface-alt shadow-lg">
-              <Image src={topSpots[0].spot_photos?.[0]?.photo_url || c1} alt="" fill sizes="(max-width: 768px) 100vw, 60vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
+              {topSpots[0].spot_photos?.[0]?.photo_url ? (
+                <Image src={topSpots[0].spot_photos[0].photo_url} alt="" fill sizes="(max-width: 768px) 100vw, 60vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
+              ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-surface-alt">
+                  <Camera className="w-12 h-12 text-muted/20" />
+                  <span className="text-[11px] font-mono text-muted/40 uppercase tracking-widest">Belum ada foto</span>
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 p-8 w-full text-white">
                 <div className="flex gap-2 mb-3">
@@ -152,7 +157,14 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           <div className="col-span-12 md:col-span-5 grid grid-rows-2 gap-6">
             {topSpots[1] && (
               <Link href={`/spot/${topSpots[1].id}`} className="row-span-1 group relative rounded-[32px] overflow-hidden bg-surface-alt shadow-lg">
-                <Image src={topSpots[1].spot_photos?.[0]?.photo_url || c2} alt="" fill sizes="(max-width: 768px) 100vw, 40vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                {topSpots[1].spot_photos?.[0]?.photo_url ? (
+                  <Image src={topSpots[1].spot_photos[0].photo_url} alt="" fill sizes="(max-width: 768px) 100vw, 40vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-surface-alt">
+                    <Camera className="w-8 h-8 text-muted/20" />
+                    <span className="text-[10px] font-mono text-muted/40 uppercase tracking-widest">Belum ada foto</span>
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6 w-full text-white">
                   <h3 className="text-2xl font-display font-bold mb-1 group-hover:text-amber-400 transition-colors line-clamp-1">{topSpots[1].name}</h3>
@@ -164,7 +176,14 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
             )}
             {topSpots[2] && (
               <Link href={`/spot/${topSpots[2].id}`} className="row-span-1 group relative rounded-[32px] overflow-hidden bg-surface-alt shadow-lg">
-                <Image src={topSpots[2].spot_photos?.[0]?.photo_url || c3} alt="" fill sizes="(max-width: 768px) 100vw, 40vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                {topSpots[2].spot_photos?.[0]?.photo_url ? (
+                  <Image src={topSpots[2].spot_photos[0].photo_url} alt="" fill sizes="(max-width: 768px) 100vw, 40vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-surface-alt">
+                    <Camera className="w-8 h-8 text-muted/20" />
+                    <span className="text-[10px] font-mono text-muted/40 uppercase tracking-widest">Belum ada foto</span>
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6 w-full text-white">
                   <h3 className="text-2xl font-display font-bold mb-1 group-hover:text-amber-400 transition-colors line-clamp-1">{topSpots[2].name}</h3>
@@ -180,7 +199,14 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           {topSpots.slice(3, 6).map((spot, i) => (
             <Link href={`/spot/${spot.id}`} key={spot.id} className="col-span-12 sm:col-span-6 md:col-span-4 group relative flex flex-col">
               <div className="w-full aspect-[4/3] rounded-[24px] overflow-hidden mb-4 relative bg-surface-alt shadow-md">
-                <Image src={spot.spot_photos?.[0]?.photo_url || [c4,c5,c1][i]} alt="" fill sizes="(max-width: 768px) 50vw, 33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                {spot.spot_photos?.[0]?.photo_url ? (
+                  <Image src={spot.spot_photos[0].photo_url} alt="" fill sizes="(max-width: 768px) 50vw, 33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface-alt">
+                    <Camera className="w-8 h-8 text-muted/20" />
+                    <span className="text-[10px] font-mono text-muted/40 uppercase tracking-widest">Belum ada foto</span>
+                  </div>
+                )}
                 {/* Badges on top of small cards */}
                 <div className="absolute top-3 left-3 flex gap-1">
                   {spot.best_time && <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-white text-[9px] font-mono font-bold rounded uppercase">{BEST_TIME_LABEL[spot.best_time] || spot.best_time}</span>}

@@ -9,10 +9,11 @@ export default async function Home() {
     .from('spots')
     .select(`
       *,
-      spot_photos!inner (
+      spot_photos (
         photo_url
       )
     `)
+    .order('created_at', { ascending: false })
     .limit(6);
 
   // 3. Fetch 4 Latest Community Photos for the collage

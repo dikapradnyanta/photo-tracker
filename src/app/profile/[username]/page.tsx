@@ -96,12 +96,11 @@ export default function PublicProfilePage() {
       // Fetch spots
       const { data: spotsData } = await supabase
         .from('spots')
-        .select('*, spot_photos(id)')
+        .select('*, spot_photos(id, photo_url)')
         .eq('added_by', profileData.id)
         .order('created_at', { ascending: false })
         
-      const activeSpots = (spotsData as any[] || []).filter(spot => spot.spot_photos && spot.spot_photos.length > 0)
-      setSpots(activeSpots)
+      setSpots((spotsData as any[] || []))
 
       // Fetch portfolio photos
       const { data: photosData } = await supabase
@@ -423,12 +422,21 @@ export default function PublicProfilePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {spots.slice(0, 6).map(spot => (
                 <Link key={spot.id} href={`/spot/${spot.id}`} className="flex items-center gap-4 p-4 panel rounded-2xl hover:border-amber-primary transition-all group">
-                  <div className="w-10 h-10 rounded-xl bg-amber-primary/10 flex items-center justify-center shrink-0">
-                    <MapPin className="w-5 h-5 text-amber-primary" />
+                  <div className="w-14 h-14 rounded-xl bg-amber-primary/10 flex items-center justify-center shrink-0 overflow-hidden border border-border">
+                    {(spot as any).spot_photos?.[0]?.photo_url ? (
+                      <img src={(spot as any).spot_photos[0].photo_url} alt={spot.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    ) : (
+                      <Camera className="w-5 h-5 text-amber-primary/60" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm group-hover:text-amber-primary transition-colors truncate">{spot.name}</p>
                     <p className="text-[10px] font-mono text-muted">{spot.genre?.join(' · ') || '—'}</p>
+                    {(spot as any).spot_photos?.length > 0 ? (
+                      <p className="text-[9px] font-mono text-amber-primary/60 mt-0.5">{(spot as any).spot_photos.length} foto</p>
+                    ) : (
+                      <p className="text-[9px] font-mono text-muted/40 mt-0.5">Belum ada foto</p>
+                    )}
                   </div>
                 </Link>
               ))}

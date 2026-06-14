@@ -58,7 +58,7 @@ export default function Map() {
 
       if (error) throw error
 
-      const rawSpots: SpotWithPhoto[] = (data || []).filter((s: SpotWithPhoto) => !!s.hero_photo_url)
+      const rawSpots: SpotWithPhoto[] = (data || [])
 
       // Ambil unique user IDs yang added_by-nya ada
       const userIds = [...new Set(rawSpots.map((s: SpotWithPhoto) => s.added_by).filter(Boolean))]
@@ -454,7 +454,14 @@ export default function Map() {
                     className="w-[260px] md:w-[280px] shrink-0 snap-center flex flex-col text-left group"
                   >
                     <div className="w-full h-40 rounded-[24px] overflow-hidden mb-3 border border-border relative bg-surface-alt">
-                      <img src={spot.hero_photo_url || 'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=400&q=80'} alt={spot.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      {spot.hero_photo_url ? (
+                        <img src={spot.hero_photo_url} alt={spot.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-surface-alt">
+                          <MapPin className="w-8 h-8 text-amber-primary/30" />
+                          <span className="text-[10px] font-mono text-muted uppercase tracking-widest">Belum ada foto</span>
+                        </div>
+                      )}
                       <div className="absolute top-2 left-2 flex gap-1">
                         {spot.genre?.slice(0, 2).map(g => (
                           <span key={g} className="px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-[8px] font-mono font-bold rounded uppercase">
