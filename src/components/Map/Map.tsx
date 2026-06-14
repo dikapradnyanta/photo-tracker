@@ -58,7 +58,7 @@ export default function Map() {
 
       if (error) throw error
 
-      const rawSpots: SpotWithPhoto[] = (data || [])
+      const rawSpots: SpotWithPhoto[] = (data || []).filter((s: SpotWithPhoto) => !!s.hero_photo_url)
 
       // Ambil unique user IDs yang added_by-nya ada
       const userIds = [...new Set(rawSpots.map((s: SpotWithPhoto) => s.added_by).filter(Boolean))]

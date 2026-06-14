@@ -163,7 +163,7 @@ export default function SpotDetailPage() {
             }
           })
           mappedSpots.sort((a, b) => b.avgRating - a.avgRating)
-          setTopSpots(mappedSpots.filter(s => s.id !== id).slice(0, 5))
+          setTopSpots(mappedSpots.filter(s => s.id !== id && s.hero_photo_url).slice(0, 5))
         }
 
       } catch (err) {
