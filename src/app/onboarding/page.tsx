@@ -22,6 +22,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [isChecking, setIsChecking] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [formData, setFormData] = useState({
     username: '',
@@ -45,27 +46,29 @@ export default function OnboardingPage() {
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) {
-        router.push('/login')
-      } else {
-        const { data: profile } = await supabase
-          .from('users')
-          .select('onboarding_completed')
-          .eq('id', session.user.id)
-          .single()
-          
-        if (profile?.onboarding_completed) {
-          router.push('/map')
-          return
-        }
-
-        setUser(session.user)
-        // Set initial values from session if available
-        setFormData(prev => ({
-          ...prev,
-          username: session.user.user_metadata?.username || '',
-          full_name: session.user.user_metadata?.full_name || '',
-        }))
+        router.replace('/login')
+        return
       }
+
+      const { data: profile } = await supabase
+        .from('users')
+        .select('onboarding_completed')
+        .eq('id', session.user.id)
+        .single()
+        
+      if (profile?.onboarding_completed) {
+        router.replace('/map')
+        return
+      }
+
+      setUser(session.user)
+      // Set initial values from session if available
+      setFormData(prev => ({
+        ...prev,
+        username: session.user.user_metadata?.username || '',
+        full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || '',
+      }))
+      setIsChecking(false)
     })
   }, [router])
 
@@ -225,6 +228,28 @@ export default function OnboardingPage() {
     { title: 'Gear & Base', desc: 'Senjata utama dan markas hunting-mu.' },
   ]
 
+  // Tampilkan loading saat mengecek status sesi & onboarding
+  if (isChecking) {
+    return (
+      <main className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-4">
+        <div className="flex flex-col items-center gap-5">
+          <div className="relative">
+            <div className="w-16 h-16 rounded-[28px] bg-amber-primary/10 border border-amber-primary/20 flex items-center justify-center">
+              <Camera className="w-7 h-7 text-amber-primary" />
+            </div>
+            <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-amber-primary rounded-lg flex items-center justify-center shadow-lg">
+              <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
+            </div>
+          </div>
+          <div className="text-center space-y-1">
+            <p className="font-display font-bold text-lg">Memeriksa Akun...</p>
+            <p className="text-sm text-muted">Sebentar ya.</p>
+          </div>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-6 relative overflow-hidden">
       {/* Background Decor */}
@@ -326,6 +351,7 @@ export default function OnboardingPage() {
                       <div className="relative group">
                         <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-amber-primary" />
                         <input 
+                          id="location-input"
                           type="text" 
                           placeholder="Denpasar, Bali"
                           className="input-base pl-14 pr-10 py-4 rounded-2xl w-full"
@@ -349,9 +375,10 @@ export default function OnboardingPage() {
                                   e.preventDefault() // Mencegah input kehilangan fokus terlalu cepat
                                   setFormData({...formData, location: loc.display_name})
                                   setShowLocSuggestions(false)
+                                  document.getElementById('location-input')?.blur()
                                 }}
                               >
-                                <p className="font-bold">{loc.name}</p>
+                                <p className="font-bold truncate">{loc.name}</p>
                                 <p className="text-[10px] text-muted truncate">{loc.display_name}</p>
                               </div>
                             ))}
@@ -365,6 +392,7 @@ export default function OnboardingPage() {
                       <div className="relative group">
                         <HardDrive className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-amber-primary" />
                         <input 
+                          id="gear-input"
                           type="text" 
                           placeholder="Sony A7IV + 35mm f/1.4"
                           className="input-base pl-14 pr-10 py-4 rounded-2xl w-full"
@@ -388,6 +416,7 @@ export default function OnboardingPage() {
                                   e.preventDefault()
                                   setFormData({...formData, gear: gear})
                                   setShowGearSuggestions(false)
+                                  document.getElementById('gear-input')?.blur()
                                 }}
                               >
                                 {gear}

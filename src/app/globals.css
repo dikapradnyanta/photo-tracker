@@ -144,7 +144,8 @@ h1, h2, h3, h4, h5, h6 {
     padding: 14px 18px;
     outline: none;
     width: 100%;
-    font-size: 0.9375rem;
+    min-width: 0;
+    font-size: 1rem;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
   .input-base:focus {
