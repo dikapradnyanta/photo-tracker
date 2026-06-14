@@ -158,12 +158,19 @@ export default function AddSpotPage() {
       }).select().single()
       if (spotError) throw spotError
 
-      await supabase.from('spot_photos').insert({
+      const { error: photoError } = await supabase.from('spot_photos').insert({
         spot_id: spotData.id,
         user_id: user.id,
         photo_url: uploadedPhotoUrl,
         caption: null,
       })
+
+      if (photoError) {
+        // Rollback spot if photo insertion fails
+        await supabase.from('spots').delete().eq('id', spotData.id)
+        throw photoError
+      }
+
       if (photoHash) saveUploadedHash(user.id, photoHash)
       setShowMergeDialog(false)
       showToast('Spot baru berhasil dipublikasikan! 🎉', 'success')
@@ -270,7 +277,11 @@ export default function AddSpotPage() {
         caption: null,
       })
 
-      if (photoError) throw photoError
+      if (photoError) {
+        // Rollback spot creation if photo insertion fails
+        await supabase.from('spots').delete().eq('id', spotData.id)
+        throw photoError
+      }
 
       if (photoHash && user?.id) {
         saveUploadedHash(user.id, photoHash)
