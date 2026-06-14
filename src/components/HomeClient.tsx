@@ -122,7 +122,7 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           <div>
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4">Spot Terpopuler</h2>
             <div className="inline-flex px-4 py-1.5 bg-surface-alt border border-border rounded-full text-xs font-mono font-bold">
-              6 dari {spots.length} spot terbaik
+              {topSpots.length} dari {spots.length} spot terbaik
             </div>
           </div>
           <Link href="/map" className="shrink-0 group flex items-center gap-2 text-sm font-bold hover:text-amber-primary transition-colors">
