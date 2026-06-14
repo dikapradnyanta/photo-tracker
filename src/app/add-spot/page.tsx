@@ -194,7 +194,16 @@ export default function AddSpotPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) { router.push('/login'); return }
+    
+    // Ensure session is fresh to prevent "exp claim timestamp check failed"
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    if (!session || sessionError) {
+      showToast('Sesi kamu telah berakhir. Silakan login kembali.', 'error')
+      router.push('/login')
+      return
+    }
+    setUser(session.user)
+
     if (!formData.name.trim()) {
       showToast('Kasih nama spotnya dulu!', 'error'); return
     }

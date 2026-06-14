@@ -178,6 +178,14 @@ export default function SpotDetailPage() {
 
   const handleToggleLike = async (photoId: string, currentlyLiked: boolean) => {
     if (!currentUser) { showToast('Silakan login untuk memberikan like!', 'error'); return router.push('/login') }
+    
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    if (!session || sessionError) {
+      showToast('Sesi berakhir. Silakan login.', 'error')
+      router.push('/login')
+      return
+    }
+
     setPhotos(prev => {
       const updated = prev.map(p =>
         p.id === photoId ? { ...p, hasLiked: !currentlyLiked, likesCount: currentlyLiked ? p.likesCount - 1 : p.likesCount + 1 } : p
@@ -197,6 +205,13 @@ export default function SpotDetailPage() {
     if (!currentUser || !spot || reviewRating === 0) return
     setSubmittingReview(true)
     try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      if (!session || sessionError) {
+        showToast('Sesi berakhir. Silakan login.', 'error')
+        router.push('/login')
+        return
+      }
+
       const { data, error } = await supabase
         .from('spot_reviews')
         .insert({ spot_id: spot.id, user_id: currentUser.id, rating: reviewRating, comment: reviewComment.trim() || null, visited_at: new Date().toISOString().split('T')[0] })
@@ -226,6 +241,13 @@ export default function SpotDetailPage() {
     if (!newPhotoFile || !currentUser || !spot) return
     setIsUploadingPhoto(true)
     try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      if (!session || sessionError) {
+        showToast('Sesi berakhir. Silakan login.', 'error')
+        router.push('/login')
+        return
+      }
+
       const ext = newPhotoFile.name.split('.').pop()
       const filename = `${currentUser.id}_${Date.now()}.${ext}`
       const filePath = `${spot.id}/${filename}`
