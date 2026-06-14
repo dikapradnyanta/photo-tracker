@@ -247,26 +247,26 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
         >
           <div className="col-span-2 aspect-[16/9] rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[0] && (
-              <>
+              <Link href={communityPhotos[0].users?.username ? `/profile/${communityPhotos[0].users.username}` : '#'} className="absolute inset-0 z-10 block">
                 <Image src={communityPhotos[0].photo_url} alt="" fill sizes="100vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
-              </>
+              </Link>
             )}
           </div>
           <div className="col-span-1 aspect-square rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[1] && (
-              <>
+              <Link href={communityPhotos[1].users?.username ? `/profile/${communityPhotos[1].users.username}` : '#'} className="absolute inset-0 z-10 block">
                 <Image src={communityPhotos[1].photo_url} alt="" fill sizes="50vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
-              </>
+              </Link>
             )}
           </div>
           <div className="col-span-1 aspect-square rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[2] && (
-              <>
+              <Link href={communityPhotos[2].users?.username ? `/profile/${communityPhotos[2].users.username}` : '#'} className="absolute inset-0 z-10 block">
                 <Image src={communityPhotos[2].photo_url} alt="" fill sizes="50vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
-              </>
+              </Link>
             )}
           </div>
         </motion.div>
@@ -282,82 +282,82 @@ export default function HomeClient({ spots, highlightUser, communityPhotos }: { 
           {/* A: col-span-4 row-span-2 */}
           <div className="col-span-4 row-span-2 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[0] && (
-              <>
+              <Link href={communityPhotos[0].users?.username ? `/profile/${communityPhotos[0].users.username}` : '#'} className="absolute inset-0 z-10 block">
                 <Image src={communityPhotos[0].photo_url} alt="" fill sizes="50vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-5">
                   <span className="font-mono text-[10px] uppercase text-white/80 tracking-widest">Foto komunitas</span>
                 </div>
-              </>
+              </Link>
             )}
           </div>
 
           {/* B: col-span-2 row-span-1 */}
           <div className="col-span-2 row-span-1 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[1] && (
-              <>
+              <Link href={communityPhotos[1].users?.username ? `/profile/${communityPhotos[1].users.username}` : '#'} className="absolute inset-0 z-10 block">
                 <Image src={communityPhotos[1].photo_url} alt="" fill sizes="33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
                   <span className="font-mono text-[10px] uppercase text-white/80 tracking-widest">Foto komunitas</span>
                 </div>
-              </>
+              </Link>
             )}
           </div>
 
           {/* C: col-span-2 row-span-1 */}
           <div className="col-span-2 row-span-1 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[2] && (
-              <>
+              <Link href={communityPhotos[2].users?.username ? `/profile/${communityPhotos[2].users.username}` : '#'} className="absolute inset-0 z-10 block">
                 <Image src={communityPhotos[2].photo_url} alt="" fill sizes="33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
                   <span className="font-mono text-[10px] uppercase text-white/80 tracking-widest">Foto komunitas</span>
                 </div>
-              </>
+              </Link>
             )}
           </div>
 
           {/* D: col-span-4 row-span-1 (wide) */}
           <div className="col-span-4 row-span-1 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[3] && (
-              <>
+              <Link href={communityPhotos[3].users?.username ? `/profile/${communityPhotos[3].users.username}` : '#'} className="absolute inset-0 z-10 block">
                 <Image src={communityPhotos[3].photo_url} alt="" fill sizes="50vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
                   <span className="font-mono text-[10px] uppercase text-white/80 tracking-widest">Foto komunitas</span>
                 </div>
-              </>
+              </Link>
             )}
           </div>
 
           {/* E: col-span-2 row-span-1 — reuse photo[0] at reduced opacity */}
           <div className="col-span-2 row-span-1 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[0] && (
-              <>
+              <Link href={communityPhotos[0].users?.username ? `/profile/${communityPhotos[0].users.username}` : '#'} className="absolute inset-0 z-10 block">
                 <Image src={communityPhotos[0].photo_url} alt="" fill sizes="33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover opacity-60 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] group-hover:opacity-100 [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500" />
-              </>
+              </Link>
             )}
           </div>
 
           {/* F: col-span-3 row-span-1 */}
           <div className="col-span-3 row-span-1 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[1] && (
-              <>
+              <Link href={communityPhotos[1].users?.username ? `/profile/${communityPhotos[1].users.username}` : '#'} className="absolute inset-0 z-10 block">
                 <Image src={communityPhotos[1].photo_url} alt="" fill sizes="33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover opacity-60 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] group-hover:opacity-100 [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500" />
-              </>
+              </Link>
             )}
           </div>
 
           {/* G: col-span-3 row-span-1 */}
           <div className="col-span-3 row-span-1 rounded-[20px] overflow-hidden relative group bg-surface-alt">
             {communityPhotos[2] && (
-              <>
+              <Link href={communityPhotos[2].users?.username ? `/profile/${communityPhotos[2].users.username}` : '#'} className="absolute inset-0 z-10 block">
                 <Image src={communityPhotos[2].photo_url} alt="" fill sizes="33vw" placeholder="blur" blurDataURL={BLUR_URL} className="object-cover opacity-60 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] group-hover:opacity-100 [filter:grayscale(20%)] group-hover:[filter:grayscale(0)]" />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500" />
-              </>
+              </Link>
             )}
           </div>
         </motion.div>

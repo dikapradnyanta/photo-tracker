@@ -19,7 +19,7 @@ export default async function Home() {
   // 3. Fetch 4 Latest Community Photos for the collage
   const { data: communityPhotos } = await supabase
     .from('spot_photos')
-    .select('*')
+    .select('*, users(username)')
     .order('created_at', { ascending: false })
     .limit(4);
 
