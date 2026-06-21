@@ -22,11 +22,18 @@ function MapUpdater({ onBoundsChange }: { onBoundsChange: (bounds: any) => void 
   })
 
   useEffect(() => {
-    onBoundsChange(map.getBounds())
+    // Delay singkat agar Leaflet selesai menginisialisasi layout kontainer
+    // sebelum kita baca getBounds(). Tanpa ini, getBounds() bisa mengembalikan
+    // koordinat yang salah (misal: world bounds) saat pertama mount.
+    const timer = setTimeout(() => {
+      onBoundsChange(map.getBounds())
+    }, 150)
+    return () => clearTimeout(timer)
   }, []) // eslint-disable-line
 
   return null
 }
+
 
 const createCustomIcon = (url: string, spotData: SpotWithPhoto) => {
   const icon = L.divIcon({
